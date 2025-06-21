@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# FE_UsePrevention
-=======
 # FE-UsePrevention
 
 This template should help get you started developing with Vue 3 in Vite.
@@ -42,4 +39,3 @@ npm run test:unit
 ```sh
 npm run lint
 ```
->>>>>>> 8e5fff6 (add login ui vue)
