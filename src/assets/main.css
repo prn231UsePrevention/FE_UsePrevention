@@ -21,6 +21,8 @@ a,
   }
 }
 
+/* Loại bỏ chia đôi layout ở #app để tránh bị chia hai cột */
+/*
 @media (min-width: 1024px) {
   body {
     display: flex;
@@ -33,3 +35,4 @@ a,
     padding: 0 2rem;
   }
 }
+*/
