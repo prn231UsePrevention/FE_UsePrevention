@@ -1,20 +1,50 @@
+<template>
+  <div class="app-bg">
+    <Header />
+    <div class="app-wrapper">
+      <main class="app-content">
+        <RouterView />
+      </main>
+      <Footer />
+    </div>
+  </div>
+</template>
+
 <script setup>
 import Header from './components/Header.vue'
 import Footer from './components/Footer.vue'
 import { RouterView } from 'vue-router'
 </script>
 
-<template>
-  <div class="app-bg">
-    <div class="app-wrapper">
-      <Header />
-      <RouterView />
-      <Footer />
-    </div>
-  </div>
-</template>
-
 <style scoped>
+.app-bg {
+  min-height: 100vh;
+  width: 100vw;
+  background: linear-gradient(135deg, rgba(230, 200, 160, 0.32), rgba(200, 180, 140, 0.28)), url('https://images.unsplash.com/photo-1470219556762-1771e7f9427d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2089&q=80') center/cover no-repeat;
+  display: flex;
+  flex-direction: column; /* Changed to column to stack header and wrapper */
+  align-items: center;
+  justify-content: flex-start;
+}
+.app-wrapper {
+  width: 100%;
+  max-width: 1200px; /* Increased max-width for better content display */
+  flex-grow: 1; /* Allow wrapper to take remaining space */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white background for content */
+  box-shadow: var(--shadow-3); /* Add a subtle shadow */
+}
+
+.app-content {
+  flex-grow: 1; /* Allow content to take available space */
+  width: 100%;
+  padding: var(--spacing-lg);
+}
+
+/* Remove old header/nav styles as they are now handled by Header.vue component or global styles */
 header {
   line-height: 1.5;
   max-height: 100vh;
@@ -75,23 +105,5 @@ nav a:first-of-type {
     padding: 1rem 0;
     margin-top: 1rem;
   }
-}
-
-.app-bg {
-  min-height: 100vh;
-  width: 100vw;
-  background: linear-gradient(135deg, rgba(230, 200, 160, 0.32), rgba(200, 180, 140, 0.28)), url('https://images.unsplash.com/photo-1470219556762-1771e7f9427d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2089&q=80') center/cover no-repeat;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-}
-.app-wrapper {
-  width: 100%;
-  max-width: 1100px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-sizing: border-box;
 }
 </style>

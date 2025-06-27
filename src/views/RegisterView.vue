@@ -1,6 +1,6 @@
 <template>
   <div class="auth-container">
-    <form class="auth-form" @submit.prevent="handleRegister">
+    <form class="auth-form card" @submit.prevent="handleRegister">
       <h2>Đăng ký</h2>
       <div class="form-group">
         <label for="name">Họ và tên</label>
@@ -18,7 +18,7 @@
         <label for="confirmPassword">Nhập lại mật khẩu</label>
         <input v-model="confirmPassword" type="password" id="confirmPassword" required placeholder="Nhập lại mật khẩu" />
       </div>
-      <button type="submit" :disabled="loading">Đăng ký</button>
+      <button type="submit" :disabled="loading" class="btn primary">Đăng ký</button>
       <p class="error" v-if="error">{{ error }}</p>
       <p class="success" v-if="success">Đăng ký thành công! Vui lòng đăng nhập.</p>
       <p class="switch-link">Đã có tài khoản? <router-link to="/login">Đăng nhập</router-link></p>
@@ -75,68 +75,79 @@ async function handleRegister() {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: var(--spacing-lg);
 }
 .auth-form {
-  background: rgba(255,255,255,0.95);
-  padding: 2.5rem 2rem 2rem 2rem;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px #0001;
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-3);
   min-width: 340px;
-  max-width: 95vw;
+  max-width: 400px;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  gap: var(--spacing-md);
 }
 .auth-form h2 {
   text-align: center;
-  color: #2196f3;
-  margin-bottom: 0.5rem;
+  color: var(--primary-color);
+  margin-bottom: var(--spacing-lg);
+  font-size: var(--font-size-h3);
 }
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: var(--spacing-xs);
+}
+label {
+  font-size: var(--font-size-md);
+  color: var(--text-color-primary);
+  font-weight: 500;
 }
 input {
-  padding: 0.7rem 1rem;
-  border-radius: 7px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
   border: 1px solid #b0c6e8;
-  font-size: 1rem;
+  font-size: var(--font-size-md);
   outline: none;
-  transition: border 0.2s;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 input:focus {
-  border: 1.5px solid #2196f3;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(var(--primary-color), 0.2);
 }
 button {
-  background: #2196f3;
-  color: #fff;
-  border: none;
-  border-radius: 7px;
-  padding: 0.8rem 0;
-  font-size: 1.1rem;
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md) 0;
+  font-size: var(--font-size-lg);
   font-weight: 600;
-  cursor: pointer;
-  margin-top: 0.5rem;
-  transition: background 0.2s;
 }
 button:disabled {
-  background: #b0c6e8;
+  background: var(--background-color);
+  color: var(--text-color-secondary);
   cursor: not-allowed;
+  box-shadow: none;
 }
 .error {
-  color: #e53935;
+  color: var(--error-color);
   text-align: center;
-  font-size: 0.98rem;
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-sm);
 }
 .success {
-  color: #43a047;
+  color: var(--success-color);
   text-align: center;
-  font-size: 0.98rem;
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-sm);
 }
 .switch-link {
   text-align: center;
-  font-size: 0.97rem;
-  margin-top: 0.5rem;
+  font-size: var(--font-size-md);
+  margin-top: var(--spacing-md);
 }
-</style> 
+.switch-link a {
+  color: var(--primary-color);
+  font-weight: 500;
+}
+</style>
+ 
