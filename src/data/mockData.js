@@ -189,5 +189,41 @@ export const mockCommunityPrograms = [
     imageUrl: 'https://via.placeholder.com/400x250?text=Community+Program+5',
     preSurveyId: null,
     postSurveyId: 's1'
+  },
+  {
+    id: 'cp6',
+    name: 'Chương trình Giáo dục Sức khỏe Học đường',
+    description: 'Tập trung vào việc cung cấp kiến thức về sức khỏe sinh sản, phòng chống HIV/AIDS và các bệnh lây truyền qua đường tình dục cho học sinh THPT.',
+    location: 'Trường THPT Nguyễn Trãi',
+    date: '2025-09-20',
+    organizer: 'Trung tâm Y tế Dự phòng',
+    targetAudience: ['Học sinh', 'Giáo viên'],
+    imageUrl: 'https://via.placeholder.com/400x250?text=Community+Program+6',
+    preSurveyId: null,
+    postSurveyId: null
+  },
+  {
+    id: 'cp7',
+    name: 'Tư vấn Pháp luật về Ma túy',
+    description: 'Buổi tư vấn trực tiếp về các quy định pháp luật liên quan đến ma túy, quyền và nghĩa vụ của người dân.',
+    location: 'Trụ sở UBND Phường X',
+    date: '2025-10-15',
+    organizer: 'Hội Luật gia',
+    targetAudience: ['Cộng đồng'],
+    imageUrl: 'https://via.placeholder.com/400x250?text=Community+Program+7',
+    preSurveyId: null,
+    postSurveyId: null
+  },
+  {
+    id: 'cp8',
+    name: 'Hỗ trợ Tâm lý cho Người thân Người nghiện',
+    description: 'Nhóm hỗ trợ tâm lý định kỳ dành cho gia đình có người thân đang cai nghiện hoặc đã cai nghiện, giúp họ vượt qua khó khăn.',
+    location: 'Phòng tư vấn Tâm lý Cộng đồng',
+    date: '2025-11-01',
+    organizer: 'Hội Tâm lý học Việt Nam',
+    targetAudience: ['Gia đình'],
+    imageUrl: 'https://via.placeholder.com/400x250?text=Community+Program+8',
+    preSurveyId: null,
+    postSurveyId: null
   }
-];
+]
