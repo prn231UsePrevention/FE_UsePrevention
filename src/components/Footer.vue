@@ -1,6 +1,6 @@
 <template>
   <footer class="main-footer">
-    <div class="footer-content">
+    <div class="container footer-content">
       <span>© 2024 UsePrevention. All rights reserved.</span>
       <span>Liên hệ: <a href="mailto:support@useprevention.com">support@useprevention.com</a></span>
     </div>
@@ -13,27 +13,35 @@
 
 <style scoped>
 .main-footer {
-  background: transparent;
-  color: #1565c0;
-  padding: 1.2rem 0 1.1rem 0;
+  background-color: var(--primary-dark); /* Darker primary color for a strong footer */
+  color: var(--surface-color); /* White text for contrast */
+  padding: var(--spacing-lg) 0; /* Generous padding */
   text-align: center;
-  margin-top: 3rem;
-  font-size: 1rem;
-  box-shadow: none;
-  border-radius: 10px;
+  margin-top: auto; /* Push footer to the bottom */
+  font-size: var(--font-size-md);
+  box-shadow: var(--shadow-2); /* Subtle shadow */
+  width: 100%; /* Full width */
 }
 .footer-content {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: var(--spacing-sm);
   align-items: center;
   justify-content: center;
 }
 .footer-content a {
-  color: #1976d2;
+  color: var(--accent-color); /* Accent color for links */
   text-decoration: none;
+  transition: text-decoration 0.2s ease-in-out;
 }
 .footer-content a:hover {
   text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .main-footer {
+    padding: var(--spacing-md) 0;
+  }
 }
 </style> 
