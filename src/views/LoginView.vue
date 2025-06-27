@@ -32,6 +32,19 @@ const router = useRouter()
 
 const API_URL = 'https://localhost:7233/api/Users/login' // Đã cập nhật theo BE mới
 
+function parseJwt(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return {};
+  }
+}
+
 async function handleLogin() {
   error.value = ''
   success.value = false
@@ -39,9 +52,12 @@ async function handleLogin() {
   try {
     const res = await axios.post(API_URL, { email: email.value, password: password.value })
     localStorage.setItem('token', res.data.token)
+    const payload = parseJwt(res.data.token);
+    const role = payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+    localStorage.setItem('role', role);
     success.value = true
     setTimeout(() => {
-      router.push('/')
+      router.push('/community-programs')
     }, 1000)
   } catch (err) {
     error.value = err.response?.data?.message || 'Đăng nhập thất bại!'

@@ -3,8 +3,8 @@
     <form class="auth-form" @submit.prevent="handleRegister">
       <h2>Đăng ký</h2>
       <div class="form-group">
-        <label for="fullName">Họ và tên</label>
-        <input v-model="fullName" type="text" id="fullName" required placeholder="Nhập họ tên" />
+        <label for="name">Họ và tên</label>
+        <input v-model="name" type="text" id="name" required placeholder="Nhập họ và tên" />
       </div>
       <div class="form-group">
         <label for="email">Email</label>
@@ -15,21 +15,12 @@
         <input v-model="password" type="password" id="password" required placeholder="Nhập mật khẩu" />
       </div>
       <div class="form-group">
-        <label for="dob">Ngày sinh</label>
-        <input v-model="dateOfBirth" type="date" id="dob" required />
-      </div>
-      <div class="form-group">
-        <label for="gender">Giới tính</label>
-        <select v-model="gender" id="gender" required>
-          <option value="">Chọn giới tính</option>
-          <option value="Nam">Nam</option>
-          <option value="Nữ">Nữ</option>
-          <option value="Khác">Khác</option>
-        </select>
+        <label for="confirmPassword">Nhập lại mật khẩu</label>
+        <input v-model="confirmPassword" type="password" id="confirmPassword" required placeholder="Nhập lại mật khẩu" />
       </div>
       <button type="submit" :disabled="loading">Đăng ký</button>
       <p class="error" v-if="error">{{ error }}</p>
-      <p class="success" v-if="success">Đăng ký thành công! Hãy đăng nhập.</p>
+      <p class="success" v-if="success">Đăng ký thành công! Vui lòng đăng nhập.</p>
       <p class="switch-link">Đã có tài khoản? <router-link to="/login">Đăng nhập</router-link></p>
     </form>
   </div>
@@ -40,29 +31,31 @@ import { ref } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 
-const fullName = ref('')
+const name = ref('')
 const email = ref('')
 const password = ref('')
-const dateOfBirth = ref('')
-const gender = ref('')
+const confirmPassword = ref('')
 const error = ref('')
 const success = ref(false)
 const loading = ref(false)
 const router = useRouter()
 
-const API_URL = 'https://localhost:7233/api/Users/register' // Đã cập nhật theo BE mới
+const API_URL = 'https://localhost:7233/api/Users/register' // Đổi lại đúng endpoint BE nếu khác
 
 async function handleRegister() {
   error.value = ''
   success.value = false
   loading.value = true
+  if (password.value !== confirmPassword.value) {
+    error.value = 'Mật khẩu nhập lại không khớp!'
+    loading.value = false
+    return
+  }
   try {
     await axios.post(API_URL, {
-      fullName: fullName.value,
+      name: name.value,
       email: email.value,
-      password: password.value,
-      dateOfBirth: dateOfBirth.value,
-      gender: gender.value
+      password: password.value
     })
     success.value = true
     setTimeout(() => {
@@ -104,7 +97,7 @@ async function handleRegister() {
   flex-direction: column;
   gap: 0.3rem;
 }
-input, select {
+input {
   padding: 0.7rem 1rem;
   border-radius: 7px;
   border: 1px solid #b0c6e8;
@@ -112,7 +105,7 @@ input, select {
   outline: none;
   transition: border 0.2s;
 }
-input:focus, select:focus {
+input:focus {
   border: 1.5px solid #2196f3;
 }
 button {

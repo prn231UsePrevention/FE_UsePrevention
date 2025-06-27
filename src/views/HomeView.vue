@@ -7,7 +7,7 @@
         <p>Giải pháp quản lý và phòng ngừa sử dụng hiệu quả.</p>
         <div class="actions">
           <router-link to="/login" class="btn">Đăng nhập</router-link>
-          <router-link to="/about" class="btn btn-outline">Về chúng tôi</router-link>
+          <!-- <router-link to="/about" class="btn btn-outline">Về chúng tôi</router-link> -->
         </div>
       </div>
     </section>
