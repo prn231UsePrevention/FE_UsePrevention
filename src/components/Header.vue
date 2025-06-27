@@ -8,12 +8,15 @@
         <router-link to="/" exact-active-class="active">Trang chủ</router-link>
         <router-link to="/about" exact-active-class="active">Về chúng tôi</router-link>
         <router-link to="/login" exact-active-class="active">Đăng nhập</router-link>
+        <router-link v-if="isLoggedIn" to="/my-participations" exact-active-class="active">Chương trình của tôi</router-link>
       </nav>
     </div>
   </header>
 </template>
 
 <script setup>
+import { ref, computed } from 'vue';
+const isLoggedIn = computed(() => !!localStorage.getItem('token'));
 // Không cần logic đặc biệt
 </script>
 
