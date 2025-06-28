@@ -4,7 +4,6 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import CommunityProgramsView from '../views/CommunityProgramsView.vue'
-import CourseProgramsView from '../views/CourseProgramsView.vue'
 
 import MyParticipationView from '../views/MyParticipationView.vue'
 import AdminDashboardView from '../views/AdminDashboardView.vue'
@@ -31,7 +30,13 @@ const routes = [
   {
     path: '/courses',
     name: 'courses',
-    component: CourseProgramsView,
+    component: () => import('../views/CourseProgramsView.vue'),
+    meta: { requiresAuth: true, roles: ['user', 'admin'] }
+  },
+  {
+    path: '/courses/:id',
+    name: 'course-detail',
+    component: () => import('../views/CourseDetailView.vue'),
     meta: { requiresAuth: true, roles: ['user', 'admin'] }
   },
   {
@@ -93,6 +98,24 @@ const routes = [
     path: '/admin/consultants',
     name: 'admin-consultants',
     component: () => import('../views/AdminConsultantsView.vue'),
+    meta: { requiresAuth: true, roles: ['admin'] }
+  },
+  {
+    path: '/admin/courses',
+    name: 'admin-courses',
+    component: () => import('../views/AdminCoursesView.vue'),
+    meta: { requiresAuth: true, roles: ['admin'] }
+  },
+  {
+    path: '/admin/courses/create',
+    name: 'course-create',
+    component: () => import('../views/CourseCreateView.vue'),
+    meta: { requiresAuth: true, roles: ['admin'] }
+  },
+  {
+    path: '/admin/courses/edit/:id',
+    name: 'course-edit',
+    component: () => import('../views/CourseEditView.vue'),
     meta: { requiresAuth: true, roles: ['admin'] }
   }
 ]
