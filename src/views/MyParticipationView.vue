@@ -62,7 +62,7 @@ import { mockUserParticipations, mockCourses, mockConsultants } from '@/data/moc
 
 const getCourseName = (courseId) => {
   const course = mockCourses.find(c => c.id === courseId)
-  return course ? course.name : 'N/A'
+  return course ? (course.title || course.name) : 'N/A'
 }
 
 const getConsultantName = (consultantId) => {

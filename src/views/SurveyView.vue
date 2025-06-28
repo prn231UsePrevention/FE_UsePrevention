@@ -18,9 +18,6 @@
 
 <script setup>
 import { mockSurveys } from '@/data/mockData'
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
 
 const startSurvey = (surveyId) => {
   // In a real application, this would navigate to a detailed survey page

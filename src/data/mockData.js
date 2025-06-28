@@ -114,7 +114,7 @@ export const mockBlogPosts = [
     author: 'Trần Văn B',
     date: '2025-06-15',
     excerpt: 'Thanh thiếu niên là đối tượng dễ bị lôi kéo vào con đường ma túy. Việc trang bị kỹ năng từ chối là vô cùng quan trọng để bảo vệ bản thân.',
-    content: '<p>Áp lực từ bạn bè là một trong những nguyên nhân chính khiến thanh thiếu niên thử ma túy. Để từ chối hiệu quả, bạn cần:</p><ul><li>Nói \"Không\" một cách rõ ràng và dứt khoát.</li><li>Đưa ra lý do chính đáng (ví dụ: \"Tôi không muốn làm hại sức khỏe của mình\").</li><li>Đề xuất một hoạt động khác.</li><li>Tránh xa tình huống hoặc rời đi nếu cần.</li><li>Tìm kiếm sự hỗ trợ từ người lớn đáng tin cậy.</li></ul><p>Hãy nhớ rằng, việc từ chối ma túy là một hành động dũng cảm và thể hiện sự tự trọng.</p>\n'
+    content: '<p>Áp lực từ bạn bè là một trong những nguyên nhân chính khiến thanh thiếu niên thử ma túy. Để từ chối hiệu quả, bạn cần:</p><ul><li>Nói "Không" một cách rõ ràng và dứt khoát.</li><li>Đưa ra lý do chính đáng (ví dụ: "Tôi không muốn làm hại sức khỏe của mình").</li><li>Đề xuất một hoạt động khác.</li><li>Tránh xa tình huống hoặc rời đi nếu cần.</li><li>Tìm kiếm sự hỗ trợ từ người lớn đáng tin cậy.</li></ul><p>Hãy nhớ rằng, việc từ chối ma túy là một hành động dũng cảm và thể hiện sự tự trọng.</p>\n'
   }
 ];
 

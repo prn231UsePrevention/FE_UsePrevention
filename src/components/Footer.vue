@@ -7,8 +7,10 @@
   </footer>
 </template>
 
-<script setup>
-// Không cần logic đặc biệt
+<script>
+export default {
+  name: 'AppFooter'
+}
 </script>
 
 <style scoped>
