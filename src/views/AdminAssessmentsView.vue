@@ -7,7 +7,7 @@
       <form @submit.prevent="createAssessment">
         <div class="form-group">
           <label for="title">Title:</label>
-          <input type="text" id="title" v-model="newAssessment.name" required />
+          <input type="text" id="title" v-model="newAssessment.title" required />
         </div>
         <div class="form-group">
           <label for="description">Description:</label>
@@ -21,7 +21,7 @@
       <h2>Existing Assessments</h2>
       <div v-if="assessments.length > 0" class="assessment-cards">
         <div v-for="assessment in assessments" :key="assessment.id" class="card assessment-item">
-          <h3>{{ assessment.name }}</h3>
+          <h3>{{ assessment.title }}</h3>
           <p>{{ assessment.description }}</p>
           <div class="actions">
             <button @click="editAssessment(assessment.id)" class="btn btn-secondary">Edit</button>
@@ -62,22 +62,19 @@ export default {
     },
     async createAssessment() {
       try {
-        const response = await assessmentService.createAssessment(this.newAssessment);
+        await assessmentService.createAssessment(this.newAssessment);
         alert('Assessment created successfully!');
-        this.newAssessment.name = '';
+        this.newAssessment.title = '';
         this.newAssessment.description = '';
-        // Redirect to the edit assessment page for the newly created assessment
-        this.$router.push({ name: 'admin-edit-assessment', params: { id: response.data.id } });
+        this.fetchAssessments(); // Refresh the list
       } catch (error) {
         console.error('Error creating assessment:', error);
         alert('Failed to create assessment.');
       }
     },
     editAssessment(id) {
-      this.$router.push({ name: 'admin-edit-assessment', params: { id: id } });
-    },
-    manageQuestions(id) {
-      this.$router.push({ name: 'admin-assessment-questions', params: { assessmentId: id } });
+      // Implement edit functionality (e.g., navigate to an edit page or open a modal)
+      alert(`Edit assessment with ID: ${id}`);
     },
     async deleteAssessment(id) {
       if (confirm('Are you sure you want to delete this assessment?')) {
@@ -97,156 +94,123 @@ export default {
 
 <style scoped>
 .admin-assessments-container {
-  padding: var(--spacing-lg);
+  padding: 20px;
   max-width: 900px;
   margin: 0 auto;
-  font-family: var(--font-family-sans);
 }
 
 h1 {
   text-align: center;
-  margin-bottom: var(--spacing-xl);
-  color: var(--text-color-primary);
-  font-size: var(--font-size-h2);
+  margin-bottom: 30px;
+  color: #333;
 }
 
 .card {
-  background-color: var(--surface-color);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-2);
-  padding: var(--spacing-lg);
-  margin: 0 auto var(--spacing-xl) auto; /* Center the card and add bottom margin */
-  max-width: 900px; /* Ensure it has a max-width to be centered */
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
 }
 
 .create-assessment-section h2,
 .assessments-list-section h2 {
-  color: var(--primary-color);
-  margin-bottom: var(--spacing-lg);
+  color: #007bff;
+  margin-bottom: 20px;
   text-align: center;
-  font-size: var(--font-size-xl);
 }
 
 .form-group {
-  margin-bottom: var(--spacing-md);
+  margin-bottom: 15px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: var(--spacing-xs);
+  margin-bottom: 5px;
   font-weight: bold;
-  color: var(--text-color-secondary);
-  font-size: var(--font-size-md);
+  color: #555;
 }
 
 .form-group input[type="text"],
 .form-group textarea {
   width: 100%;
-  padding: var(--spacing-sm);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-md);
-  box-sizing: border-box;
-  font-size: var(--font-size-md);
-  color: var(--text-color-primary);
-  background-color: var(--background-color);
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box; /* Include padding in width */
 }
 
 .form-group textarea {
   resize: vertical;
-  min-height: 100px;
+  min-height: 80px;
 }
 
 .btn {
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: 10px 15px;
   border: none;
-  border-radius: var(--border-radius-md);
+  border-radius: 5px;
   cursor: pointer;
-  font-size: var(--font-size-md);
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
-  font-weight: 600;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
 }
 
 .btn-primary {
-  background-color: var(--primary-color);
+  background-color: #007bff;
   color: white;
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-dark);
-  box-shadow: var(--shadow-1);
+  background-color: #0056b3;
 }
 
 .assessment-cards {
   display: grid;
+  justify-content: center;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--spacing-lg);
-  justify-content: center; /* Center grid items horizontally */
-  max-width: 900px; /* Limit width to allow centering */
-  margin: 0 auto; /* Center the grid container itself */
+  gap: 20px;
 }
 
 .assessment-item {
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-md);
-  padding: var(--spacing-md);
-  text-align: center;
-  background-color: var(--background-color);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  width: 100%; /* Ensure items take full width of their grid cell */
-}
-
-.assessment-item:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-3);
+  border: 1px solid #eee;
+  padding: 15px;
+  text-align: center; /* Căn giữa text */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; /* Căn giữa nội dung theo chiều ngang */
 }
 
 .assessment-item h3 {
   margin-top: 0;
-  color: var(--text-color-primary);
-  font-size: var(--font-size-lg);
-  margin-bottom: var(--spacing-xs);
+  color: #333;
 }
 
 .assessment-item p {
-  color: var(--text-color-secondary);
-  font-size: var(--font-size-sm);
-  margin-bottom: var(--spacing-md);
+  color: #666;
+  font-size: 0.9em;
 }
 
 .assessment-item .actions {
-  margin-top: var(--spacing-md);
+  margin-top: 15px;
   display: flex;
-  gap: var(--spacing-sm);
-  justify-content: flex-end; /* Align buttons to the right */
+  gap: 10px;
 }
 
 .btn-secondary {
-  background-color: var(--secondary-color);
+  background-color: #6c757d;
   color: white;
 }
 
 .btn-secondary:hover {
-  background-color: var(--secondary-dark);
-  box-shadow: var(--shadow-1);
+  background-color: #5a6268;
 }
 
 .btn-danger {
-  background-color: var(--error-color);
+  background-color: #dc3545;
   color: white;
 }
 
 .btn-danger:hover {
-  background-color: var(--error-dark);
-  box-shadow: var(--shadow-1);
-}
-
-.btn-info {
-  background-color: var(--info-color);
-  color: white;
-}
-
-.btn-info:hover {
-  background-color: var(--info-dark);
-  box-shadow: var(--shadow-1);
+  background-color: #c82333;
 }
 </style>
