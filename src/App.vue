@@ -22,26 +22,30 @@ import { RouterView } from 'vue-router'
   width: 100vw;
   background: linear-gradient(135deg, rgba(230, 200, 160, 0.32), rgba(200, 180, 140, 0.28)), url('https://images.unsplash.com/photo-1470219556762-1771e7f9427d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2089&q=80') center/cover no-repeat;
   display: flex;
-  flex-direction: column; /* Changed to column to stack header and wrapper */
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   justify-content: flex-start;
 }
 .app-wrapper {
-  width: 100%;
-  max-width: 1200px; /* Increased max-width for better content display */
-  flex-grow: 1; /* Allow wrapper to take remaining space */
+  width: 100vw;
+  max-width: none;
+  margin: 0;
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   box-sizing: border-box;
-  background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white background for content */
-  box-shadow: var(--shadow-3); /* Add a subtle shadow */
+  background: none;
+  box-shadow: none;
+  padding: 0;
 }
 
 .app-content {
-  flex-grow: 1; /* Allow content to take available space */
-  width: 100%;
-  padding: var(--spacing-lg);
+  flex-grow: 1;
+  width: 100vw;
+  max-width: none;
+  padding: 0;
+  background: none;
 }
 
 /* Remove old header/nav styles as they are now handled by Header.vue component or global styles */
