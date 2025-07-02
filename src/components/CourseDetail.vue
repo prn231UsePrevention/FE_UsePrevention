@@ -118,12 +118,25 @@
     <!-- RELATED COURSES (mock) -->
     <section class="max-w-6xl mx-auto px-4 py-10">
       <h2 class="text-2xl font-bold mb-6">Related Courses</h2>
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div v-for="related in mockRelatedCourses" :key="related.title" class="bg-white rounded-xl shadow p-4">
-          <img :src="related.image" class="w-full h-32 object-cover rounded mb-3" />
-          <div class="font-semibold mb-1">{{ related.title }}</div>
-          <div class="text-gray-500 text-sm mb-2">{{ related.instructor }}</div>
-          <button class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition">View details</button>
+      <div class="netflix-scroll flex flex-nowrap space-x-6 overflow-x-auto px-4 pb-4">
+        <div
+          v-for="(course, idx) in mockRelatedCourses"
+          :key="course.title"
+          class="netflix-card relative rounded-lg overflow-hidden shadow-lg bg-gray-800 min-w-[260px] max-w-[260px] h-[340px] flex flex-col"
+          @click="viewCourse(course.title)"
+          tabindex="0"
+          style="position: relative;"
+        >
+          <div class="w-full h-48 bg-gray-200 flex items-center justify-center overflow-hidden">
+            <img :src="course.image" class="object-cover w-full h-full" @error="handleImageError" />
+          </div>
+          <!-- thử comment overlay này nếu nghi ngờ -->
+          <!--
+          <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-3">
+            <div class="text-white font-bold text-lg line-clamp-2">{{ course.title }}</div>
+            <div class="text-gray-300 text-xs mt-1 line-clamp-1">{{ course.instructor }}</div>
+          </div>
+          -->
         </div>
       </div>
     </section>
@@ -185,5 +198,17 @@ const mockRelatedCourses = [
   { title: 'Phòng chống bạo lực học đường', instructor: 'Trần Thị B', image: 'https://via.placeholder.com/300x200?text=Course+2' },
   { title: 'Giáo dục giới tính', instructor: 'Lê Văn C', image: 'https://via.placeholder.com/300x200?text=Course+3' },
   { title: 'Kỹ năng giao tiếp', instructor: 'Phạm Thị D', image: 'https://via.placeholder.com/300x200?text=Course+4' }
+]
+
+const courseSections = [
+  {
+    title: "Khóa học nổi bật",
+    courses: [/* array các course nổi bật */]
+  },
+  {
+    title: "Khóa học mới",
+    courses: [/* array các course mới */]
+  },
+  // ... các nhóm khác
 ]
 </script>
