@@ -9,6 +9,7 @@
         class="event-card"
         @click="openModal(event)"
       >
+        <img v-if="event.imgUrl" :src="event.imgUrl" alt="Ảnh chương trình" class="event-img" />
         <div class="event-title">
           {{ event.name }}
         </div>
@@ -22,6 +23,7 @@
       <div class="modal-content">
         <button class="modal-close" @click="closeModal">×</button>
         <h3>{{ selectedEvent.name }}</h3>
+        <img v-if="selectedEvent.imgUrl" :src="selectedEvent.imgUrl" alt="Ảnh chương trình" class="event-img-modal" style="max-width: 100%; margin-bottom: 1rem; border-radius: 8px;" />
         <div class="detail-row"><span class="detail-label">Mô tả:</span>{{ selectedEvent.description }}</div>
         <div class="detail-row"><span class="detail-label">Bắt đầu:</span>{{ formatDate(selectedEvent.startDate, true) }}</div>
         <div class="detail-row"><span class="detail-label">Kết thúc:</span>{{ formatDate(selectedEvent.endDate, true) }}</div>
@@ -405,6 +407,11 @@ fetchPrograms();
   padding: 1rem;
   cursor: pointer;
   transition: box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
 }
 .event-card:hover {
   box-shadow: 0 4px 16px #4f8cff22;
@@ -413,6 +420,13 @@ fetchPrograms();
   font-size: 1.2rem;
   font-weight: 600;
   color: #2196f3;
+  text-align: center;
+  width: 100%;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .event-details {
   margin-top: 0.7rem;
@@ -546,5 +560,21 @@ fetchPrograms();
     flex-direction: column;
     gap: 0.5rem;
   }
+}
+.event-img {
+  width: 100%;
+  max-height: 140px;
+  object-fit: cover;
+  border-radius: 8px 8px 0 0;
+  margin-bottom: 0.5rem;
+  background: #f7f7f7;
+}
+.event-img-modal {
+  width: 100%;
+  max-height: 260px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background: #f7f7f7;
 }
 </style> 
