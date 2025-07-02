@@ -12,7 +12,7 @@
         </template>
 
         <!-- User Links -->
-        <template v-if="isLoggedIn && userRole === 'user'">
+        <template v-if="isLoggedIn && (userRole === 'user' || userRole === 'customer')">
           <router-link to="/" exact-active-class="active">Trang chủ</router-link>
           <router-link to="/courses" exact-active-class="active">Các khóa học</router-link>
           <router-link to="/community-programs" exact-active-class="active">Chương trình cộng đồng</router-link>
@@ -25,7 +25,7 @@
         <template v-if="isLoggedIn && userRole === 'admin'">
           <router-link to="/admin/dashboard" exact-active-class="active">Dashboard</router-link>
           <router-link to="/admin/courses" exact-active-class="active">Quản lý khóa học</router-link>
-          <router-link to="/admin/community-programs" exact-active-class="active">Quản lý chương trình</router-link>
+          <router-link to="/community-programs" exact-active-class="active">Quản lý chương trình</router-link>
           <router-link to="/admin/surveys" exact-active-class="active">Quản lý khảo sát</router-link>
           <router-link to="/admin/consultants" exact-active-class="active">Quản lý chuyên viên</router-link>
         </template>
