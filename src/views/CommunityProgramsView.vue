@@ -87,6 +87,8 @@
           <input id="start" v-model="form.startDate" type="datetime-local" required />
           <label for="end">Kết thúc</label>
           <input id="end" v-model="form.endDate" type="datetime-local" required />
+          <label for="imgUrl">Đường dẫn ảnh</label>
+          <input id="imgUrl" v-model="form.imgUrl" placeholder="Nhập URL ảnh (tùy chọn)" />
           <div class="modal-actions">
             <button type="submit">{{ formMode === 'add' ? 'Thêm' : 'Cập nhật' }}</button>
           </div>
@@ -135,7 +137,7 @@ const canJoinProgram = computed(() => ['user', 'customer'].includes(authStore.us
 
 const programs = ref([]);
 const error = ref('');
-const form = ref({ name: '', description: '', startDate: '', endDate: '' });
+const form = ref({ name: '', description: '', startDate: '', endDate: '', imgUrl: '' });
 const selectedEvent = ref(null);
 const showForm = ref(false);
 const formMode = ref('add'); // 'add' hoặc 'edit'
@@ -235,11 +237,12 @@ function openFormModal(event = null) {
       name: event.name,
       description: event.description,
       startDate: toDatetimeLocal(event.startDate),
-      endDate: toDatetimeLocal(event.endDate)
+      endDate: toDatetimeLocal(event.endDate),
+      imgUrl: event.imgUrl || ''
     };
   } else {
     formMode.value = 'add';
-    form.value = { name: '', description: '', startDate: '', endDate: '' };
+    form.value = { name: '', description: '', startDate: '', endDate: '', imgUrl: '' };
   }
 }
 function closeFormModal() {
@@ -260,7 +263,8 @@ const addProgram = async () => {
     const data = {
       ...form.value,
       startDate: toUTCISOString(form.value.startDate),
-      endDate: toUTCISOString(form.value.endDate)
+      endDate: toUTCISOString(form.value.endDate),
+      imgUrl: form.value.imgUrl || null
     };
     await createCommunityProgram(data, token);
     closeFormModal();
@@ -277,7 +281,8 @@ const updateProgram = async () => {
       name: form.value.name,
       description: form.value.description,
       startDate: toUTCISOString(form.value.startDate),
-      endDate: toUTCISOString(form.value.endDate)
+      endDate: toUTCISOString(form.value.endDate),
+      imgUrl: form.value.imgUrl || null
     };
     await updateCommunityProgram(form.value.id, data, token);
     closeFormModal();
