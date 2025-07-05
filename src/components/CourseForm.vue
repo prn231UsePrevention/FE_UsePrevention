@@ -2,14 +2,24 @@
   <form @submit.prevent="handleSubmit" class="course-form-modal">
     <!-- Tên khóa học -->
     <div class="form-group">
-      <label for="name">Tên khóa học <span class="required">*</span></label>
-      <input id="name" v-model="formData.name" type="text" required placeholder="Nhập tên khóa học..." />
+      <label for="title">Tên khóa học <span class="required">*</span></label>
+      <input id="title" v-model="formData.title" type="text" required placeholder="Nhập tên khóa học..." />
     </div>
     <!-- Mô tả -->
     <div class="form-group">
       <label for="description">Mô tả khóa học <span class="required">*</span></label>
       <textarea id="description" v-model="formData.description" rows="3" required
         placeholder="Mô tả chi tiết về khóa học..."></textarea>
+    </div>
+    <!-- Đối tượng mục tiêu -->
+    <div class="form-group">
+      <label>Đối tượng mục tiêu <span class="required">*</span></label>
+      <div class="checkbox-group">
+        <label v-for="audience in availableAudiences" :key="audience">
+          <input type="checkbox" :value="audience" v-model="formData.targetAudience" />
+          {{ audience }}
+        </label>
+      </div>
     </div>
     <!-- Địa điểm -->
     <div class="form-group">
@@ -28,15 +38,16 @@
         <input id="endDate" v-model="formData.endDate" type="date" required />
       </div>
     </div>
-    <!-- Đối tượng mục tiêu -->
+    <!-- Cấp độ khóa học -->
     <div class="form-group">
-      <label>Đối tượng mục tiêu <span class="required">*</span></label>
-      <div class="checkbox-group">
-        <label v-for="audience in availableAudiences" :key="audience">
-          <input type="checkbox" :value="audience" v-model="formData.targetAudience" />
-          {{ audience }}
-        </label>
-      </div>
+      <label for="courseGrade">Cấp độ khóa học <span class="required">*</span></label>
+      <select id="courseGrade" v-model="formData.courseGrade" required>
+        <option value="">Chọn cấp độ</option>
+        <option value="A">A - Cơ bản</option>
+        <option value="B">B - Trung bình</option>
+        <option value="C">C - Nâng cao</option>
+        <option value="D">D - Chuyên sâu</option>
+      </select>
     </div>
     <!-- Hình ảnh -->
     <div class="form-group">
@@ -48,6 +59,13 @@
       <label for="additionalInfo">Thông tin bổ sung</label>
       <textarea id="additionalInfo" v-model="formData.additionalInfo" rows="2"
         placeholder="Thông tin bổ sung về khóa học (không bắt buộc)..."></textarea>
+    </div>
+    <!-- Trạng thái hoạt động -->
+    <div class="form-group">
+      <label class="checkbox-label">
+        <input type="checkbox" v-model="formData.isActive" />
+        Khóa học đang hoạt động
+      </label>
     </div>
     <!-- Nút -->
     <div class="form-actions">
@@ -90,16 +108,18 @@ const availableAudiences = [
   'Gia đình'
 ]
 
-// Form data
+// Form data matching CourseRequestDto structure
 const formData = ref({
-  name: '',
+  title: '',
   description: '',
+  targetAudience: [],
   location: '',
   startDate: '',
   endDate: '',
-  targetAudience: [],
   imageUrl: '',
-  additionalInfo: ''
+  additionalInfo: '',
+  isActive: true,
+  courseGrade: ''
 })
 
 // Validation errors
@@ -112,8 +132,8 @@ const isLoading = computed(() => coursesStore.isLoading)
 const validateForm = () => {
   errors.value = {}
 
-  if (!formData.value.name.trim()) {
-    errors.value.name = 'Tên khóa học không được để trống'
+  if (!formData.value.title.trim()) {
+    errors.value.title = 'Tên khóa học không được để trống'
   }
 
   if (!formData.value.description.trim()) {
@@ -142,6 +162,10 @@ const validateForm = () => {
     errors.value.targetAudience = 'Vui lòng chọn ít nhất một đối tượng mục tiêu'
   }
 
+  if (!formData.value.courseGrade) {
+    errors.value.courseGrade = 'Vui lòng chọn cấp độ khóa học'
+  }
+
   if (formData.value.imageUrl && !isValidUrl(formData.value.imageUrl)) {
     errors.value.imageUrl = 'URL hình ảnh không hợp lệ'
   }
@@ -164,16 +188,18 @@ const handleSubmit = async () => {
   }
 
   try {
-    // Map frontend fields to backend DTO format
+    // Map to CourseRequestDto format
     const courseData = {
-      title: formData.value.name, // Map 'name' to 'title'
+      title: formData.value.title,
       description: formData.value.description,
       targetAudience: formData.value.targetAudience,
       location: formData.value.location,
       startDate: formData.value.startDate,
       endDate: formData.value.endDate,
-      imageUrl: formData.value.imageUrl || 'https://via.placeholder.com/300x200?text=Khóa+học',
-      additionalInfo: formData.value.additionalInfo
+      imageUrl: formData.value.imageUrl || null,
+      additionalInfo: formData.value.additionalInfo || null,
+      isActive: formData.value.isActive,
+      courseGrade: formData.value.courseGrade
     }
 
     emit('submit', courseData)
@@ -189,25 +215,29 @@ const handleImageError = (event) => {
 const initializeForm = () => {
   if (props.course) {
     formData.value = {
-      name: props.course.title || props.course.name || '',
+      title: props.course.title || props.course.name || '',
       description: props.course.description || '',
       location: props.course.location || '',
       startDate: props.course.startDate || '',
       endDate: props.course.endDate || '',
       targetAudience: [...(props.course.targetAudience || [])],
       imageUrl: props.course.imageUrl || '',
-      additionalInfo: props.course.additionalInfo || ''
+      additionalInfo: props.course.additionalInfo || '',
+      isActive: props.course.isActive !== undefined ? props.course.isActive : true,
+      courseGrade: props.course.courseGrade || ''
     }
   } else {
     formData.value = {
-      name: '',
+      title: '',
       description: '',
       location: 'Online',
       startDate: '',
       endDate: '',
       targetAudience: [],
       imageUrl: '',
-      additionalInfo: ''
+      additionalInfo: '',
+      isActive: true,
+      courseGrade: ''
     }
   }
 }
@@ -228,7 +258,18 @@ watch(() => props.course, () => {
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
-  width: 100%;
+  width: 90vw;
+  max-width: 600px;
+  margin: 8px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  padding: 24px;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 1001;
+  overflow-y: auto;
+  max-height: 90vh;
 }
 
 .form-group {
@@ -255,7 +296,8 @@ label {
 input[type="text"],
 input[type="date"],
 input[type="url"],
-textarea {
+textarea,
+select {
   width: 100%;
   padding: 0.7rem 1rem;
   border-radius: 8px;
@@ -266,7 +308,8 @@ textarea {
 }
 
 input:focus,
-textarea:focus {
+textarea:focus,
+select:focus {
   border: 1.5px solid #2196f3;
   background: #f0f7ff;
 }
@@ -285,6 +328,21 @@ textarea:focus {
   display: flex;
   align-items: center;
   gap: 0.3rem;
+}
+
+.checkbox-label {
+  font-weight: 400;
+  color: #333;
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  margin: 0;
 }
 
 .form-actions {
