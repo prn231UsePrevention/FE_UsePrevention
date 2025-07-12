@@ -3,36 +3,48 @@
     <h1>Kết quả khảo sát của bạn</h1>
     <div v-if="result">
       <p class="score">Điểm của bạn: <span>{{ result.score }} / 10</span></p>
-      <div class="suggestions">
-        <h2>Đề xuất dành cho bạn:</h2>
-        <div v-if="result.score < 5" class="suggestion-card danger">
-          <h3>Cần hỗ trợ khẩn cấp</h3>
-          <p>Điểm số của bạn cho thấy bạn có thể cần sự hỗ trợ chuyên sâu. Vui lòng liên hệ chuyên gia tư vấn ngay lập tức hoặc gọi đường dây nóng <strong>113</strong> để được giúp đỡ.</p>
-          <p>Chúng tôi khuyến khán bạn tìm kiếm sự hỗ trợ từ các chuyên gia y tế hoặc tâm lý để có kế hoạch hỗ trợ phù hợp.</p>
+      <p class="score">Hạng của bạn: <span :class="gradeClass">{{ courseGrade }}</span></p>
+
+      <div v-if="result.score === 0" class="suggestion-card danger">
+        <h3>Cần hỗ trợ khẩn cấp!</h3>
+        <p>Điểm số của bạn cho thấy bạn đang ở trong tình trạng cần sự hỗ trợ chuyên sâu ngay lập tức. Vui lòng liên hệ chuyên gia tư vấn hoặc gọi đường dây nóng <strong>113</strong> để được giúp đỡ khẩn cấp.</p>
+        <p><strong>Hành động ngay:</strong> Chúng tôi khuyến khích bạn tìm kiếm sự hỗ trợ từ các chuyên gia y tế hoặc tâm lý để có kế hoạch can thiệp phù hợp và kịp thời.</p>
+      </div>
+
+      <div v-else class="suggestions">
+        <h2>Đề xuất dành cho bạn</h2>
+
+        <!-- Detailed Suggestion Text -->
+        <div class="suggestion-card" :class="gradeClass">
+          <h3>Lời khuyên chi tiết</h3>
+          <p>{{ suggestionDetails.text }}</p>
         </div>
-        <div v-else-if="result.score < 8" class="suggestion-card warning">
-          <h3>Khóa học cơ bản được đề xuất</h3>
-          <p>Điểm số của bạn cho thấy bạn có thể hưởng lợi từ các khóa học cơ bản về phòng chống ma túy. Các khóa học này sẽ cung cấp kiến thức nền tảng và kỹ năng cần thiết.</p>
-          <p>Chúng tôi đề xuất các khóa học sau:</p>
+
+        <!-- Suggested Courses -->
+        <div v-if="suggestedCourses.length > 0" class="suggestion-card" :class="gradeClass">
+          <h3>Các khóa học được đề xuất</h3>
+          <p>Dựa trên kết quả của bạn, các khóa học sau có thể hữu ích:</p>
           <ul>
-            <li>Khóa học 1: Kiến thức cơ bản về ma túy</li>
-            <li>Khóa học 2: Kỹ năng từ chối và đối phó</li>
-            <li>Khóa học 3: Hỗ trợ cộng đồng</li>
+            <li v-for="course in suggestedCourses" :key="course.id">{{ course.title }}</li>
           </ul>
-          <button class="btn btn-primary">Xem các khóa học cơ bản</button>
+          <router-link to="/course-programs" class="btn btn-primary">Xem tất cả khóa học</router-link>
         </div>
-        <div v-else class="suggestion-card success">
-          <h3>Khóa học nâng cao được đề xuất</h3>
-          <p>Chúc mừng! Điểm số của bạn rất tốt. Để nâng cao hơn nữa kiến thức và kỹ năng của mình, chúng tôi khuyến nghị các khóa học nâng cao.</p>
-          <p>Chúng tôi đề xuất các khóa học sau:</p>
+        <div v-else class="suggestion-card">
+          <h3>Không có khóa học nào được đề xuất</h3>
+          <p>Hiện tại không có khóa học nào phù hợp với hạng của bạn. Hãy khám phá các tài nguyên khác của chúng tôi.</p>
+        </div>
+
+        <!-- Suggested Community Programs -->
+        <div v-if="suggestedCommunityPrograms.length > 0" class="suggestion-card info">
+          <h3>Chương trình cộng đồng</h3>
+          <p>Tham gia các chương trình cộng đồng có thể giúp bạn kết nối và nhận được sự hỗ trợ từ những người có cùng hoàn cảnh:</p>
           <ul>
-            <li>Khóa học 4: Phòng chống ma túy chuyên sâu</li>
-            <li>Khóa học 5: Lãnh đạo và vận động cộng đồng</li>
-            <li>Khóa học 6: Hỗ trợ phục hồi</li>
+            <li v-for="program in suggestedCommunityPrograms" :key="program.id">{{ program.title }}</li>
           </ul>
-          <button class="btn btn-primary">Xem các khóa học nâng cao</button>
+          <router-link to="/community-programs" class="btn btn-info">Khám phá chương trình cộng đồng</router-link>
         </div>
       </div>
+
       <button @click="showRetakeConfirmDialog = true" class="btn btn-secondary retake-button">Làm lại khảo sát</button>
     </div>
     <div v-else>
@@ -42,7 +54,7 @@
     <!-- Custom Confirmation Dialog -->
     <div v-if="showRetakeConfirmDialog" class="custom-dialog-overlay">
       <div class="custom-dialog">
-        <div class="dialog-icon">&#9888;</div> <!-- Warning Icon -->
+        <div class="dialog-icon">&#9888;</div>
         <h3>Xác nhận làm lại khảo sát</h3>
         <p>Bạn có chắc chắn muốn làm lại khảo sát? Kết quả hiện tại sẽ bị xóa vĩnh viễn.</p>
         <div class="dialog-actions">
@@ -56,6 +68,8 @@
 
 <script>
 import assessmentService from '@/services/assessmentService';
+import { getAllCourses } from '@/services/courseService';
+import { getAllCommunityPrograms } from '@/services/communityProgramService'; // Import service
 
 export default {
   name: 'AssessmentResultView',
@@ -63,12 +77,69 @@ export default {
     return {
       result: null,
       showRetakeConfirmDialog: false,
+      allCourses: [],
+      allCommunityPrograms: [], // Add state for community programs
     };
+  },
+  computed: {
+    courseGrade() {
+      if (!this.result) return '';
+      if (this.result.score >= 9) return 'A';
+      if (this.result.score >= 7) return 'B';
+      if (this.result.score >= 5) return 'C';
+      return 'D';
+    },
+    suggestedCourses() {
+      return this.allCourses.filter(course => course.courseGrade === this.courseGrade);
+    },
+    suggestedCommunityPrograms() {
+      // Suggest programs for those with lower scores
+      if (this.courseGrade === 'C' || this.courseGrade === 'D') {
+        return this.allCommunityPrograms;
+      }
+      return [];
+    },
+    gradeClass() {
+      switch (this.courseGrade) {
+        case 'A':
+        case 'B':
+          return 'success';
+        case 'C':
+          return 'warning';
+        case 'D':
+          return 'danger';
+        default:
+          return '';
+      }
+    },
+    suggestionDetails() {
+      switch (this.courseGrade) {
+        case 'A':
+          return {
+            text: 'Xuất sắc! Điểm số từ 9-10 cho thấy bạn có sức khỏe tinh thần rất tốt và khả năng phục hồi cao. Hãy tiếp tục phát huy những thói quen tích cực này và lan tỏa năng lượng đến mọi người xung quanh.'
+          };
+        case 'B':
+          return {
+            text: 'Khá tốt! Với điểm số từ 7-8, bạn đang làm tốt việc chăm sóc sức khỏe tinh thần của mình. Một vài khóa học bổ sung có thể giúp bạn hoàn thiện hơn nữa các kỹ năng cần thiết.'
+          };
+        case 'C':
+          return {
+            text: 'Cần chú ý. Điểm số từ 5-6 cho thấy có một vài vấn đề bạn cần quan tâm. Đây là lúc để tìm hiểu các phương pháp đối phó mới và cân nhắc tham gia các chương trình hỗ trợ của chúng tôi.'
+          };
+        case 'D':
+          return {
+            text: 'Cần cải thiện. Điểm số dưới 5 cho thấy bạn có thể đang đối mặt với nhiều thách thức. Đừng ngần ngại tìm kiếm sự giúp đỡ. Các khóa học và chương trình cộng đồng của chúng tôi luôn sẵn sàng hỗ trợ bạn.'
+          };
+        default:
+          return { text: '' };
+      }
+    }
   },
   methods: {
     async retakeAssessment() {
       try {
-        await assessmentService.deleteAssessmentResult(this.result.id);
+        const token = localStorage.getItem('token');
+        await assessmentService.deleteAssessmentResult(this.result.id, token);
         this.$router.push({ name: 'take-assessment', params: { id: this.result.assessmentId } });
       } catch (error) {
         console.error('Error retaking assessment:', error);
@@ -82,17 +153,41 @@ export default {
     cancelRetake() {
       this.showRetakeConfirmDialog = false;
     },
+    async fetchAllData() {
+      try {
+        const token = localStorage.getItem('token');
+        // Fetch courses and programs in parallel
+        const [coursesResponse, programsResponse] = await Promise.all([
+          getAllCourses(token),
+          getAllCommunityPrograms(token)
+        ]);
+        this.allCourses = coursesResponse.data;
+        this.allCommunityPrograms = programsResponse.data;
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
   },
   async created() {
     const resultId = this.$route.params.resultId;
-    if (resultId) {
+    const token = localStorage.getItem('token');
+    if (resultId && token) {
       try {
-        const response = await assessmentService.getResultById(resultId);
+        const response = await assessmentService.getResultById(resultId, token);
         this.result = response.data;
+        await this.fetchAllData(); // Fetch all required data
       } catch (error) {
         console.error('Error fetching assessment result:', error);
+        if (error.response && error.response.status === 404) {
+          alert('Không tìm thấy kết quả khảo sát.');
+          this.$router.push({ name: 'assessment-list' });
+        } else {
         alert('Không thể tải kết quả khảo sát.');
       }
+    }
+    } else {
+      // Handle case where resultId or token is missing
+      this.$router.push({ name: 'login' });
     }
   },
 };
@@ -103,7 +198,7 @@ export default {
   max-width: 800px;
   margin: 40px auto;
   padding: 30px;
-  background-color: #fff;
+  background-color: #f9f9f9;
   border-radius: 10px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   text-align: center;
@@ -124,8 +219,12 @@ h1 {
 
 .score span {
   font-weight: bold;
-  color: #4CAF50; /* Green for score */
 }
+
+.score span.success { color: #388E3C; }
+.score span.warning { color: #ffa000; }
+.score span.danger { color: #d32f2f; }
+
 
 .suggestions {
   margin-top: 40px;
@@ -140,11 +239,13 @@ h1 {
 }
 
 .suggestion-card {
+  background-color: #fff;
   padding: 25px;
   border-radius: 8px;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   text-align: left;
   line-height: 1.6;
+  border-left: 5px solid;
 }
 
 .suggestion-card h3 {
@@ -160,33 +261,59 @@ h1 {
 }
 
 .suggestion-card ul li {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgba(0, 0, 0, 0.03);
   padding: 10px 15px;
   border-radius: 5px;
   margin-bottom: 8px;
   font-size: 0.95em;
 }
 
-.suggestion-card .btn-primary {
+.btn {
   display: inline-block;
-  background-color: #007bff;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 5px;
-  text-decoration: none;
-  margin-top: 20px;
-  transition: background-color 0.3s ease;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid transparent;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+    text-decoration: none;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 }
 
-.suggestion-card .btn-primary:hover {
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+  margin-top: 20px;
+}
+
+.btn-primary:hover {
   background-color: #0056b3;
 }
 
+.btn-info {
+    color: #fff;
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    margin-top: 20px;
+}
+
+.btn-info:hover {
+    color: #fff;
+    background-color: #138496;
+    border-color: #117a8b;
+}
+
+
 /* Card specific colors */
 .suggestion-card.danger {
-  background-color: #ffe0e0; /* Light red */
-  border: 1px solid #f44336;
-  color: #f44336;
+  border-left-color: #f44336;
 }
 
 .suggestion-card.danger h3 {
@@ -194,9 +321,7 @@ h1 {
 }
 
 .suggestion-card.warning {
-  background-color: #fff8e1; /* Light amber */
-  border: 1px solid #ffc107;
-  color: #ffc107;
+  border-left-color: #ffc107;
 }
 
 .suggestion-card.warning h3 {
@@ -204,14 +329,21 @@ h1 {
 }
 
 .suggestion-card.success {
-  background-color: #e8f5e9; /* Light green */
-  border: 1px solid #4CAF50;
-  color: #4CAF50;
+  border-left-color: #4CAF50;
 }
 
 .suggestion-card.success h3 {
   color: #388E3C;
 }
+
+.suggestion-card.info {
+    border-left-color: #17a2b8;
+}
+
+.suggestion-card.info h3 {
+    color: #138496;
+}
+
 
 .retake-button {
   margin-top: 30px;
