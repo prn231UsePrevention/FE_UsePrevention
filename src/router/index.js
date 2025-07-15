@@ -43,7 +43,9 @@ const routes = [
     path: '/community-programs',
     name: 'community-programs',
     component: CommunityProgramsView,
+
     meta: { requiresAuth: true, roles: ['customer', 'admin'] }
+
   },
   {
     path: '/my-participations',
@@ -154,7 +156,7 @@ router.beforeEach((to, from, next) => {
       authStore.logout()
       return // The logout action will redirect to /login
     }
-    
+
     if (requiredRoles && requiredRoles.length > 0 && !requiredRoles.includes(userRole)) {
       // Role is not authorized for this route. Redirect to their home page.
       if (userRole === 'admin') {

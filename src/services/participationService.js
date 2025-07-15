@@ -15,10 +15,17 @@ export const getMyParticipations = (token) =>
     });
 
 // Admin: Lấy danh sách người tham gia của 1 chương trình
-export const getParticipantsByProgram = (programId, token) =>
-    axios.get(`${API_URL}/program/${programId}`, {
+export async function getParticipantsByProgram(programId, token) {
+    // Gọi API lấy toàn bộ participation, sau đó lọc theo programId
+    const res = await axios.get('/api/Participation', {
         headers: { Authorization: `Bearer ${token}` }
     });
+    // Lọc danh sách theo programId
+    return {
+        ...res,
+        data: Array.isArray(res.data) ? res.data.filter(p => p.programId === programId) : []
+    };
+}
 
 // Cập nhật thông tin tham gia (nếu có)
 export const updateParticipation = (participationId, data, token) =>
