@@ -36,7 +36,12 @@ const loading = ref(false)
 const error = ref('')
 
 const goBack = () => {
-  router.go(-1) // Go back to the previous page
+  // Đảm bảo không reload trang, chỉ dùng router.push
+  if (authStore.userRole === 'admin') {
+    router.push('/admin/dashboard')
+  } else {
+    router.push('/courses')
+  }
 }
 
 const formatDate = (dateString) => {
@@ -55,9 +60,15 @@ onMounted(async () => {
       headers: { Authorization: `Bearer ${token}` }
     })
     // Update user info in authStore
-    authStore.user = res.data
-    // Optionally update localStorage for persistence
-    localStorage.setItem('user', JSON.stringify(res.data))
+    const oldUser = authStore.user || {}
+    const newUser = {
+      ...oldUser,
+      ...res.data,
+      id: oldUser.id, // giữ lại id cũ
+      role: (res.data.role || oldUser.role || '').toLowerCase() // luôn là chữ thường
+    }
+    authStore.user = newUser
+    localStorage.setItem('user', JSON.stringify(newUser))
   } catch (err) {
     error.value = err.response?.data?.message || err.message || 'Lỗi khi tải thông tin người dùng.'
   } finally {

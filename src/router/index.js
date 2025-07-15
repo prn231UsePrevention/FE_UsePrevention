@@ -31,43 +31,45 @@ const routes = [
     path: '/courses',
     name: 'courses',
     component: () => import('../views/CourseProgramsView.vue'),
-    meta: { requiresAuth: true, roles: ['user', 'admin'] }
+    meta: { requiresAuth: true, roles: ['customer', 'admin'] }
   },
   {
     path: '/courses/:id',
     name: 'course-detail',
     component: () => import('../views/CourseDetailView.vue'),
-    meta: { requiresAuth: true, roles: ['user', 'admin'] }
+    meta: { requiresAuth: true, roles: ['customer', 'admin'] }
   },
   {
     path: '/community-programs',
     name: 'community-programs',
     component: CommunityProgramsView,
-    meta: { requiresAuth: true, roles: ['user', 'admin', 'customer'] }
+
+    meta: { requiresAuth: true, roles: ['customer', 'admin'] }
+
   },
   {
     path: '/my-participations',
     name: 'my-participations',
     component: MyParticipationView,
-    meta: { requiresAuth: true, roles: ['user', 'customer'] }
+    meta: { requiresAuth: true, roles: ['customer'] }
   },
   {
     path: '/surveys',
     name: 'surveys',
     component: () => import('../views/SurveyView.vue'),
-    meta: { requiresAuth: true, roles: ['user'] }
+    meta: { requiresAuth: true, roles: ['customer'] }
   },
   {
     path: '/consultants',
     name: 'consultants',
     component: () => import('../views/ConsultantBookingView.vue'),
-    meta: { requiresAuth: true, roles: ['user'] }
+    meta: { requiresAuth: true, roles: ['customer'] }
   },
   {
     path: '/profile',
     name: 'profile',
     component: () => import('../views/UserInformationView.vue'),
-    meta: { requiresAuth: true, roles: ['user', 'admin'] }
+    meta: { requiresAuth: true, roles: ['customer', 'admin'] }
   },
   {
     path: '/blog/:id',
