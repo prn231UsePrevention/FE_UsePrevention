@@ -1,7 +1,13 @@
 <template>
   <div class="user-profile-container card">
     <h1>Thông tin Hồ sơ Người dùng</h1>
-    <div v-if="authStore.user" class="profile-details">
+    <div v-if="loading" class="profile-details">
+      <p>Đang tải thông tin...</p>
+    </div>
+    <div v-else-if="error" class="profile-details">
+      <p style="color: red">{{ error }}</p>
+    </div>
+    <div v-else-if="authStore.user" class="profile-details">
       <p><strong>Họ và tên:</strong> {{ authStore.user.fullName }}</p>
       <p><strong>Email:</strong> {{ authStore.user.email }}</p>
       <p><strong>Ngày sinh:</strong> {{ formatDate(authStore.user.dateOfBirth) }}</p>
@@ -18,14 +24,24 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 
 const authStore = useAuthStore()
 const router = useRouter()
 
+const loading = ref(false)
+const error = ref('')
+
 const goBack = () => {
-  router.go(-1) // Go back to the previous page
+  // Đảm bảo không reload trang, chỉ dùng router.push
+  if (authStore.userRole === 'admin') {
+    router.push('/admin/dashboard')
+  } else {
+    router.push('/courses')
+  }
 }
 
 const formatDate = (dateString) => {
@@ -33,6 +49,32 @@ const formatDate = (dateString) => {
   const options = { year: 'numeric', month: 'long', day: 'numeric' }
   return new Date(dateString).toLocaleDateString('vi-VN', options)
 }
+
+onMounted(async () => {
+  loading.value = true
+  error.value = ''
+  try {
+    const token = authStore.token
+    if (!token) throw new Error('Bạn chưa đăng nhập!')
+    const res = await axios.get('https://localhost:7233/api/Users/my-user', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    // Update user info in authStore
+    const oldUser = authStore.user || {}
+    const newUser = {
+      ...oldUser,
+      ...res.data,
+      id: oldUser.id, // giữ lại id cũ
+      role: (res.data.role || oldUser.role || '').toLowerCase() // luôn là chữ thường
+    }
+    authStore.user = newUser
+    localStorage.setItem('user', JSON.stringify(newUser))
+  } catch (err) {
+    error.value = err.response?.data?.message || err.message || 'Lỗi khi tải thông tin người dùng.'
+  } finally {
+    loading.value = false
+  }
+})
 </script>
 
 <style scoped>

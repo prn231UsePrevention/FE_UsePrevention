@@ -15,9 +15,19 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Getters
   const isLoggedIn = computed(() => !!token.value)
-  const userRole = computed(() => (user.value ? user.value.role : null))
+  const userRole = computed(() => (user.value ? (user.value.role === 'user' ? 'customer' : user.value.role) : null))
 
   // Actions
+  function parseJwt(token) {
+    if (!token) return null
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+    }).join(''))
+    return JSON.parse(jsonPayload)
+  }
+
   function login(userData, userToken) {
     // Normalize role to lowercase before storing
     if (userData && userData.role) {
@@ -25,6 +35,8 @@ export const useAuthStore = defineStore('auth', () => {
     } else if (userData && userData.Role) { // Fallback for PascalCase
       userData.role = userData.Role.toLowerCase();
       delete userData.Role; // Remove the PascalCase property
+      if (userData.role === 'user') userData.role = 'customer'
+      userData.role = userData.role.toLowerCase()
     }
     console.log("/////////////////")
     console.log(userData)
@@ -33,6 +45,20 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = userToken
     localStorage.setItem('user', JSON.stringify(userData))
     localStorage.setItem('token', userToken)
+
+    // Parse userId from token and save to store
+    const payload = parseJwt(userToken)
+    if (payload) {
+      // Lấy sub hoặc nameidentifier
+      const id = payload.sub || payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"]
+      if (id) {
+        user.value = {
+          ...user.value,
+          id: id
+        }
+        localStorage.setItem('user', JSON.stringify(user.value))
+      }
+    }
 
     console.log('Auth Store: User logged in.')
     console.log('Auth Store: Token:', token.value ? 'Exists' : 'Does not exist')

@@ -4,7 +4,6 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import CommunityProgramsView from '../views/CommunityProgramsView.vue'
-import CourseProgramsView from '../views/CourseProgramsView.vue'
 
 import MyParticipationView from '../views/MyParticipationView.vue'
 import AdminDashboardView from '../views/AdminDashboardView.vue'
@@ -31,14 +30,22 @@ const routes = [
   {
     path: '/courses',
     name: 'courses',
-    component: CourseProgramsView,
-    meta: { requiresAuth: true, roles: ['user', 'admin'] }
+    component: () => import('../views/CourseProgramsView.vue'),
+    meta: { requiresAuth: true, roles: ['customer', 'admin'] }
+  },
+  {
+    path: '/courses/:id',
+    name: 'course-detail',
+    component: () => import('../views/CourseDetailView.vue'),
+    meta: { requiresAuth: true, roles: ['customer', 'admin'] }
   },
   {
     path: '/community-programs',
     name: 'community-programs',
     component: CommunityProgramsView,
-    meta: { requiresAuth: true, roles: ['user', 'admin'] }
+
+    meta: { requiresAuth: true, roles: ['customer', 'admin'] }
+
   },
   {
     path: '/community-programs/:id',
@@ -50,9 +57,9 @@ const routes = [
     path: '/my-participations',
     name: 'my-participations',
     component: MyParticipationView,
-    meta: { requiresAuth: true, roles: ['user'] }
+    meta: { requiresAuth: true, roles: ['customer'] }
   },
-  
+
   {
     path: '/assessments',
     name: 'assessments',
@@ -75,13 +82,13 @@ const routes = [
     path: '/consultants',
     name: 'consultants',
     component: () => import('../views/ConsultantBookingView.vue'),
-    meta: { requiresAuth: true, roles: ['user'] }
+    meta: { requiresAuth: true, roles: ['customer'] }
   },
   {
     path: '/profile',
     name: 'profile',
     component: () => import('../views/UserInformationView.vue'),
-    meta: { requiresAuth: true, roles: ['user', 'admin'] }
+    meta: { requiresAuth: true, roles: ['customer', 'admin'] }
   },
   {
     path: '/blog/:id',
@@ -121,6 +128,24 @@ const routes = [
     meta: { requiresAuth: true, roles: ['admin'] }
   },
   {
+    path: '/admin/courses',
+    name: 'admin-courses',
+    component: () => import('../views/AdminCoursesView.vue'),
+    meta: { requiresAuth: true, roles: ['admin'] }
+  },
+  {
+    path: '/admin/courses/create',
+    name: 'course-create',
+    component: () => import('../views/CourseCreateView.vue'),
+    meta: { requiresAuth: true, roles: ['admin'] }
+  },
+  {
+    path: '/admin/courses/edit/:id',
+    name: 'course-edit',
+    component: () => import('../views/CourseEditView.vue'),
+    meta: { requiresAuth: true, roles: ['admin'] }
+  },
+   {
     path: '/admin/assessments/:id/edit',
     name: 'admin-edit-assessment',
     component: () => import('../views/AdminEditAssessmentView.vue'),
@@ -162,7 +187,7 @@ router.beforeEach((to, from, next) => {
       authStore.logout()
       return // The logout action will redirect to /login
     }
-    
+
     if (requiredRoles && requiredRoles.length > 0 && !requiredRoles.includes(userRole)) {
       // Role is not authorized for this route. Redirect to their home page.
       if (userRole === 'admin') {

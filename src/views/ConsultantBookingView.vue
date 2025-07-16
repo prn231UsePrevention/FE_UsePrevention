@@ -20,9 +20,6 @@
 
 <script setup>
 import { mockConsultants } from '@/data/mockData'
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
 
 const viewConsultantDetails = (consultantId) => {
   // In a real application, this would navigate to a detailed consultant page

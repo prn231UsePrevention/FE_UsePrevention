@@ -1,94 +1,69 @@
 <template>
   <div class="my-participation-container card">
-    <h1>Hoạt động của tôi</h1>
-    <p>Xem lại các khóa học bạn đã đăng ký và lịch hẹn đã đặt.</p>
-
-    <div class="participation-section">
-      <h2><span class="icon">📚</span> Khóa học đã đăng ký</h2>
-      <div v-if="mockUserParticipations.registeredCourses.length" class="table-responsive">
-        <table class="participation-table">
-          <thead>
-            <tr>
-              <th>Tên khóa học</th>
-              <th>Ngày đăng ký</th>
-              <th>Trạng thái</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="course in mockUserParticipations.registeredCourses" :key="course.id">
-              <td>{{ getCourseName(course.courseId) }}</td>
-              <td>{{ formatDate(course.registrationDate) }}</td>
-              <td><span :class="getStatusClass(course.status)">{{ course.status }}</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div v-else class="status-message">
-        Bạn chưa đăng ký khóa học nào.
-      </div>
-    </div>
-
-    <div class="participation-section">
-      <h2><span class="icon">🗓️</span> Lịch hẹn đã đặt</h2>
-      <div v-if="mockUserParticipations.bookedAppointments.length" class="table-responsive">
-        <table class="participation-table">
-          <thead>
-            <tr>
-              <th>Chuyên viên</th>
-              <th>Ngày hẹn</th>
-              <th>Thời gian</th>
-              <th>Trạng thái</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="appointment in mockUserParticipations.bookedAppointments" :key="appointment.id">
-              <td>{{ getConsultantName(appointment.consultantId) }}</td>
-              <td>{{ formatDate(appointment.appointmentDate) }}</td>
-              <td>{{ appointment.time }}</td>
-              <td><span :class="getStatusClass(appointment.status)">{{ appointment.status }}</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div v-else class="status-message">
-        Bạn chưa đặt lịch hẹn nào.
-      </div>
+    <h1>Chương trình đã tham gia</h1>
+    <div v-if="loading">Đang tải...</div>
+    <div v-else-if="error">{{ error }}</div>
+    <div v-else>
+      <table v-if="participations.length" class="participation-table">
+        <thead>
+          <tr>
+            <th>Tên chương trình</th>
+            <th>Ngày tham gia</th>
+            <th>Pre Survey</th>
+            <th>Post Survey</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="p in participations" :key="p.id">
+            <td>{{ getProgramName(p.programId) }}</td>
+            <td>{{ formatDate(p.joinedAt) }}</td>
+            <td>{{ p.preSurvey }}</td>
+            <td>{{ p.postSurvey }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div v-else class="status-message">Bạn chưa tham gia chương trình nào.</div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { mockUserParticipations, mockCourses, mockConsultants } from '@/data/mockData'
+import { ref, onMounted } from 'vue'
+import { getMyParticipations } from '@/services/participationService'
+import { getAllCommunityPrograms } from '@/services/communityProgramService'
 
-const getCourseName = (courseId) => {
-  const course = mockCourses.find(c => c.id === courseId)
-  return course ? course.name : 'N/A'
-}
+const participations = ref([])
+const programs = ref([])
+const loading = ref(false)
+const error = ref('')
 
-const getConsultantName = (consultantId) => {
-  const consultant = mockConsultants.find(c => c.id === consultantId)
-  return consultant ? consultant.name : 'N/A'
+const getProgramName = (programId) => {
+  const program = programs.value.find(p => p.id === programId)
+  return program ? program.name : 'N/A'
 }
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A'
-  const options = { year: 'numeric', month: 'long', day: 'numeric' }
-  return new Date(dateString).toLocaleDateString('vi-VN', options)
+  const d = new Date(dateString)
+  return d.toLocaleString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
 }
 
-const getStatusClass = (status) => {
-  switch (status) {
-    case 'Đã xác nhận':
-    case 'Đã hoàn thành':
-      return 'status-success'
-    case 'Đã hủy':
-      return 'status-danger'
-    case 'Đã đăng ký':
-    case 'Đang chờ':
-    default:
-      return 'status-info'
+onMounted(async () => {
+  loading.value = true
+  try {
+    const token = localStorage.getItem('token')
+    const [res, progRes] = await Promise.all([
+      getMyParticipations(token),
+      getAllCommunityPrograms(token)
+    ])
+    participations.value = Array.isArray(res.data) ? res.data : []
+    programs.value = Array.isArray(progRes.data) ? progRes.data : []
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Lỗi tải dữ liệu!'
+  } finally {
+    loading.value = false
   }
-}
+})
 </script>
 
 <style scoped>
