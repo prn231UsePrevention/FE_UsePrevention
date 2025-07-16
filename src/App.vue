@@ -1,6 +1,6 @@
 <template>
   <div class="app-bg">
-    <Header />
+    <AppHeader />
     <div class="app-wrapper">
       <main class="app-content">
         <RouterView />
@@ -11,7 +11,7 @@
 </template>
 
 <script setup>
-import Header from './components/Header.vue'
+import AppHeader from './components/AppHeader.vue'
 import Footer from './components/Footer.vue'
 import { RouterView } from 'vue-router'
 </script>

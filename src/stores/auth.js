@@ -8,6 +8,11 @@ export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('token') || null)
   const user = ref(JSON.parse(localStorage.getItem('user')) || null)
 
+  console.log("//////////////////////");
+  console.log(user)
+
+
+
   // Getters
   const isLoggedIn = computed(() => !!token.value)
   const userRole = computed(() => (user.value ? (user.value.role === 'user' ? 'customer' : user.value.role) : null))
@@ -26,9 +31,15 @@ export const useAuthStore = defineStore('auth', () => {
   function login(userData, userToken) {
     // Normalize role to lowercase before storing
     if (userData && userData.role) {
+      userData.role = userData.role.toLowerCase();
+    } else if (userData && userData.Role) { // Fallback for PascalCase
+      userData.role = userData.Role.toLowerCase();
+      delete userData.Role; // Remove the PascalCase property
       if (userData.role === 'user') userData.role = 'customer'
       userData.role = userData.role.toLowerCase()
     }
+    console.log("/////////////////")
+    console.log(userData)
     // Store all user data received from the API
     user.value = userData
     token.value = userToken

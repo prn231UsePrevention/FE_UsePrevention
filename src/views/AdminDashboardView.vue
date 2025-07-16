@@ -22,6 +22,8 @@
       </div>
     </div>
 
+    
+
     <div class="recent-activities card">
       <h2>Hoạt động Gần đây</h2>
       <ul v-if="mockAdminDashboardData.recentActivities.length">

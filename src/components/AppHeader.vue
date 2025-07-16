@@ -17,7 +17,7 @@
           <router-link to="/" exact-active-class="active">Trang chủ</router-link>
           <router-link to="/courses" exact-active-class="active">Các khóa học</router-link>
           <router-link to="/community-programs" exact-active-class="active">Chương trình cộng đồng</router-link>
-          <router-link to="/surveys" exact-active-class="active">Khảo sát</router-link>
+          <router-link to="/assessments" exact-active-class="active">Khảo sát</router-link>
           <router-link to="/consultants" exact-active-class="active">Tư vấn</router-link>
           <router-link to="/my-participations" exact-active-class="active">Chương trình của tôi</router-link>
         </template>

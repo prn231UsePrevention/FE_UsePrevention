@@ -30,7 +30,7 @@ const success = ref(false)
 const loading = ref(false)
 const authStore = useAuthStore()
 
-const API_URL = 'https://localhost:7233/api/Users/login'
+const API_URL = 'http://localhost:5153/api/Users/login'
 
 function parseJwt(token) {
   try {
@@ -59,10 +59,11 @@ async function handleLogin() {
     const res = await axios.post(API_URL, { email: email.value, password: password.value })
     const token = res.data.token
     const payload = parseJwt(token)
+    console.log(res)
 
     if (payload) {
       const user = {
-        id: res.data.id, // Assuming res.data.id is the user ID
+        id: res.data.userId,
         fullName: res.data.fullName,
         email: res.data.email,
         dateOfBirth: res.data.dateOfBirth,
@@ -71,6 +72,7 @@ async function handleLogin() {
         isActive: res.data.isActive,
         role: payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
       }
+      console.log(user)
       authStore.login(user, token)
       success.value = true
     } else {
@@ -165,4 +167,3 @@ button:disabled {
   font-weight: 500;
 }
 </style>
- 

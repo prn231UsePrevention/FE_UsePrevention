@@ -48,16 +48,35 @@ const routes = [
 
   },
   {
+    path: '/community-programs/:id',
+    name: 'community-program-detail',
+    component: () => import('../views/CommunityProgramView.vue'),
+    meta: { requiresAuth: true, roles: ['user', 'admin'] }
+  },
+  {
     path: '/my-participations',
     name: 'my-participations',
     component: MyParticipationView,
     meta: { requiresAuth: true, roles: ['customer'] }
   },
+
   {
-    path: '/surveys',
-    name: 'surveys',
-    component: () => import('../views/SurveyView.vue'),
-    meta: { requiresAuth: true, roles: ['customer'] }
+    path: '/assessments',
+    name: 'assessments',
+    component: () => import('../views/AssessmentListView.vue'),
+    meta: { requiresAuth: true, roles: ['user', 'admin'] }
+  },
+  {
+    path: '/assessments/:id',
+    name: 'take-assessment',
+    component: () => import('../views/TakeAssessmentView.vue'),
+    meta: { requiresAuth: true, roles: ['user'] }
+  },
+  {
+    path: '/assessment-result/:resultId',
+    name: 'assessment-result',
+    component: () => import('../views/AssessmentResultView.vue'),
+    meta: { requiresAuth: true, roles: ['user', 'admin'] }
   },
   {
     path: '/consultants',
@@ -97,6 +116,12 @@ const routes = [
     meta: { requiresAuth: true, roles: ['admin'] }
   },
   {
+    path: '/admin/assessments/:assessmentId/questions',
+    name: 'admin-assessment-questions',
+    component: () => import('../views/AdminAssessmentQuestionsView.vue'),
+    meta: { requiresAuth: true, roles: ['admin'] }
+  },
+  {
     path: '/admin/consultants',
     name: 'admin-consultants',
     component: () => import('../views/AdminConsultantsView.vue'),
@@ -118,6 +143,12 @@ const routes = [
     path: '/admin/courses/edit/:id',
     name: 'course-edit',
     component: () => import('../views/CourseEditView.vue'),
+    meta: { requiresAuth: true, roles: ['admin'] }
+  },
+   {
+    path: '/admin/assessments/:id/edit',
+    name: 'admin-edit-assessment',
+    component: () => import('../views/AdminEditAssessmentView.vue'),
     meta: { requiresAuth: true, roles: ['admin'] }
   }
 ]
