@@ -21,14 +21,16 @@
         </div>
 
         <!-- Suggested Courses -->
-        <div v-if="suggestedCourses.length > 0" class="suggestion-card" :class="gradeClass">
-          <h3>Các khóa học được đề xuất</h3>
-          <p>Dựa trên kết quả của bạn, các khóa học sau có thể hữu ích:</p>
-          <ul>
-            <li v-for="course in suggestedCourses" :key="course.id">{{ course.title }}</li>
-          </ul>
-          <router-link to="/course-programs" class="btn btn-primary">Xem tất cả khóa học</router-link>
-        </div>
+        <div v-if="recommendedCourses.length > 0" class="mt-6">
+    <h3 class="text-xl font-semibold">Các khóa học được đề xuất</h3>
+    <ul class="list-disc list-inside mt-2">
+        <li v-for="course in recommendedCourses" :key="course.id">
+            <router-link :to="{ name: 'CourseDetail', params: { id: course.id } }" class="text-blue-600 hover:underline">
+                {{ course.title }}
+            </router-link>
+        </li>
+    </ul>
+</div>
         <div v-else class="suggestion-card">
           <h3>Không có khóa học nào được đề xuất</h3>
           <p>Hiện tại không có khóa học nào phù hợp với hạng của bạn. Hãy khám phá các tài nguyên khác của chúng tôi.</p>
