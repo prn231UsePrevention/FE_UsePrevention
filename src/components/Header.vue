@@ -29,7 +29,6 @@
           <router-link to="/admin/surveys" exact-active-class="active">Quản lý khảo sát</router-link>
           <router-link to="/admin/consultants" exact-active-class="active">Quản lý chuyên viên</router-link>
         </template>
-        
         <!-- User Info & Logout -->
         <div v-if="isLoggedIn" class="user-info">
           <router-link to="/profile" class="user-name">{{ authStore.user?.email || 'Người dùng' }}</router-link>
