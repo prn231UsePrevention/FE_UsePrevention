@@ -45,7 +45,7 @@
               @click="changeStatus(app.id, 'Completed')"
             >Hoàn thành</button>
             <button
-              v-if="app.status !== 'Cancelled'"
+              v-if="app.status !== 'Cancelled' && app.status !== 'Completed'"
               @click="cancelAppointment(app.id)"
             >Hủy</button>
           </td>
@@ -121,8 +121,15 @@ const cancelAppointment = async id => {
 const createNewSlot = async () => {
   if (!newSlotTime.value) return
   try {
-    // convert thành ISO string có giây
-    const iso = new Date(newSlotTime.value).toISOString() 
+    // Tạo đối tượng Date từ thời gian người dùng nhập vào
+    const localDate = new Date(newSlotTime.value)
+
+    // Chuyển giờ về UTC (thêm 7 giờ cho múi giờ Việt Nam)
+    const utcDate = new Date(localDate.getTime() + (7 * 60 * 60 * 1000)) // Cộng thêm 7 giờ (7 tiếng x 60 phút x 60 giây x 1000 ms)
+    
+    // Convert to ISO string with seconds
+    const iso = utcDate.toISOString() 
+
     console.log('Creating new slot at:', iso)
     await store.createSlot({ startTime: iso })
 
@@ -134,6 +141,7 @@ const createNewSlot = async () => {
     alert(e.response?.data?.message || e.message || 'Lỗi khi tạo slot')
   }
 }
+
 
 // chung hàm load cả scheduled + available
 const loadSlots = async () => {
