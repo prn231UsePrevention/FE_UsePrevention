@@ -6,3 +6,17 @@ export async function getAllUsers(token) {
         headers: { Authorization: `Bearer ${token}` }
     });
 } 
+
+export async function getConsultantByUserId(token, userId) {
+  return axios.get(`/api/Users/consultant/${userId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+}
+
+export async function getMyUserInfo(token) {
+  return axios.get('/api/Users/my-user', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+}
