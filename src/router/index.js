@@ -85,10 +85,22 @@ const routes = [
     meta: { requiresAuth: true, roles: ['customer'] }
   },
   {
+    path: '/appointments',
+    name: 'appointments',
+    component: () => import('../views/UserBookAppointment.vue'),
+    meta: { requiresAuth: true, roles: ['customer'] }
+  },
+  {
+    path: '/appointment',
+    name: 'appointment',
+    component: () => import('../views/ConsultantAppointments.vue'),
+    meta: { requiresAuth: true, roles: ['consultant'] }
+  },
+  {
     path: '/profile',
     name: 'profile',
     component: () => import('../views/UserInformationView.vue'),
-    meta: { requiresAuth: true, roles: ['customer', 'admin'] }
+    meta: { requiresAuth: true, roles: ['user', 'admin', 'consultant'] }
   },
   {
     path: '/blog/:id',
@@ -145,7 +157,7 @@ const routes = [
     component: () => import('../views/CourseEditView.vue'),
     meta: { requiresAuth: true, roles: ['admin'] }
   },
-   {
+  {
     path: '/admin/assessments/:id/edit',
     name: 'admin-edit-assessment',
     component: () => import('../views/AdminEditAssessmentView.vue'),
