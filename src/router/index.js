@@ -67,7 +67,7 @@ const routes = [
     path: '/profile',
     name: 'profile',
     component: () => import('../views/UserInformationView.vue'),
-    meta: { requiresAuth: true, roles: ['user', 'admin','consultant'] }
+    meta: { requiresAuth: true, roles: ['user', 'admin'] }
   },
   {
     path: '/blog/:id',
