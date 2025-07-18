@@ -19,6 +19,7 @@
           <router-link to="/surveys" exact-active-class="active">Khảo sát</router-link>
           <router-link to="/consultants" exact-active-class="active">Tư vấn</router-link>
           <router-link to="/my-participations" exact-active-class="active">Chương trình của tôi</router-link>
+          <router-link to="/appointments" exact-active-class="active">Cuộc hẹn</router-link>
         </template>
 
         <!-- Admin Links -->
@@ -29,7 +30,10 @@
           <router-link to="/admin/surveys" exact-active-class="active">Quản lý khảo sát</router-link>
           <router-link to="/admin/consultants" exact-active-class="active">Quản lý chuyên viên</router-link>
         </template>
-
+        <!-- Consultant Links -->
+        <template v-if="isLoggedIn && userRole === 'consultant'">
+          <router-link to="/appointment" exact-active-class="active">Cuộc hẹn</router-link>
+        </template>
         <!-- User Info & Logout -->
         <div v-if="isLoggedIn" class="user-info">
           <router-link to="/profile" class="user-name">{{ authStore.user?.email || 'Người dùng' }}</router-link>
