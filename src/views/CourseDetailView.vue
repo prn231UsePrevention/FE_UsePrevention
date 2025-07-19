@@ -1,6 +1,6 @@
 <template>
   <div class="course-detail">
-    <CourseDetail :courseId="route.params.id" />
+    <CourseDetail :key="route.params.id" :courseId="route.params.id" />
   </div>
 </template>
 

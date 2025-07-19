@@ -42,16 +42,32 @@
             </div>
             <p class="course-description">{{ course.description }}</p>
             <div class="course-actions">
-              <button class="btn-primary" @click="handleEnroll" :disabled="enrollLoading">
+              <button 
+                v-if="!isEnrolled" 
+                class="btn-primary" 
+                @click="handleEnroll" 
+                :disabled="enrollLoading || checkingEnrollment"
+              >
                 <span class="btn-icon">📚</span>
-                <span v-if="!enrollLoading">Đăng ký học</span>
+                <span v-if="!enrollLoading && !checkingEnrollment">Đăng ký học</span>
+                <span v-else-if="checkingEnrollment">Đang kiểm tra...</span>
                 <span v-else>Đang đăng ký...</span>
+              </button>
+              <button 
+                v-else 
+                class="btn-enrolled" 
+                disabled
+              >
+                <span class="btn-icon">✅</span>
+                Đã đăng ký
               </button>
               <button v-if="isAdmin" @click="editCourse(course.id)" class="btn-admin">
                 <span class="btn-icon">✏️</span>
                 Chỉnh sửa
               </button>
             </div>
+            
+            
             <div class="course-features">
               <span class="feature">🌐 Trực tuyến</span>
               <span class="feature">🎓 Chứng chỉ hoàn thành</span>
@@ -65,7 +81,20 @@
                 <iframe :src="getYoutubeEmbedUrl(course.imageUrl)" frameborder="0" allowfullscreen class="video-frame"></iframe>
               </template>
               <template v-else>
-                <img :src="course.imageUrl" :alt="course.title || course.name" class="course-image" @error="handleImageError" />
+                <div class="course-image-container">
+                  <img 
+                    v-if="hasValidImage"
+                    :src="course.imageUrl || course.image" 
+                    :alt="course.title || course.name" 
+                    class="course-image" 
+                    @error="handleImageError" 
+                  />
+                  <div v-else class="course-placeholder">
+                    <div class="placeholder-icon">📚</div>
+                    <div class="placeholder-title">{{ course.title || course.name || 'Khóa học' }}</div>
+                    <div class="placeholder-subtitle">Học tập trực tuyến</div>
+                  </div>
+                </div>
               </template>
             </div>
           </div>
@@ -90,14 +119,20 @@
       <section class="section">
         <div class="container">
           <h2 class="section-title">Mô tả khóa học</h2>
-          <div class="description-content">
-            <p class="description-text">{{ course.description }}</p>
-            <div v-if="course.additionalInfo" class="info-box">
-              <h4 class="info-title">📋 Thông tin bổ sung:</h4>
-              <p class="info-text">{{ course.additionalInfo }}</p>
+          <div class="description-grid">
+            <div class="description-card">
+              <div class="description-icon">📝</div>
+              <h3 class="description-title">Mô tả chính</h3>
+              <p class="description-text">{{ course.description }}</p>
             </div>
-            <div v-if="course.targetAudience && course.targetAudience.length > 0" class="audience-section">
-              <h4 class="audience-title">👥 Đối tượng học viên:</h4>
+            <div v-if="course.additionalInfo" class="description-card">
+              <div class="description-icon">📋</div>
+              <h3 class="description-title">Thông tin bổ sung</h3>
+              <p class="description-text">{{ course.additionalInfo }}</p>
+            </div>
+            <div v-if="course.targetAudience && course.targetAudience.length > 0" class="description-card">
+              <div class="description-icon">👥</div>
+              <h3 class="description-title">Đối tượng học viên</h3>
               <div class="audience-tags">
                 <span v-for="audience in course.targetAudience" :key="audience" class="audience-tag">
                   {{ audience }}
@@ -112,18 +147,16 @@
       <section class="section">
         <div class="container">
           <h2 class="section-title">Chương trình học</h2>
-          <div class="curriculum-list">
-            <div v-for="(chapter, index) in mockCurriculum" :key="chapter.title" class="curriculum-chapter">
-              <div class="chapter-header">
-                <div class="chapter-number">{{ index + 1 }}</div>
-                <h3 class="chapter-title">{{ chapter.title }}</h3>
-              </div>
-              <ul class="lesson-list">
-                <li v-for="lesson in chapter.lessons" :key="lesson" class="lesson-item">
+          <div class="curriculum-grid">
+            <div v-for="(chapter, index) in mockCurriculum" :key="chapter.title" class="curriculum-card">
+              <div class="curriculum-icon">📚</div>
+              <h3 class="curriculum-title">{{ chapter.title }}</h3>
+              <div class="lesson-list">
+                <div v-for="lesson in chapter.lessons" :key="lesson" class="lesson-item">
                   <span class="lesson-icon">📖</span>
                   <span class="lesson-text">{{ lesson }}</span>
-                </li>
-              </ul>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -176,22 +209,29 @@
       </section>
 
       <!-- RELATED COURSES -->
-      <section class="section">
+      <section class="section" v-if="relatedCourses.length > 0">
         <div class="container">
           <h2 class="section-title">Khóa học liên quan</h2>
           <div class="related-courses">
             <div
-              v-for="(course, idx) in mockRelatedCourses"
-              :key="course.title"
+              v-for="(course, idx) in relatedCourses"
+              :key="course.id"
               class="related-course-card"
-              @click="viewCourse(course.title)"
+              @click="viewCourse(course.id)"
             >
               <div class="course-thumbnail">
-                <img :src="course.image" :alt="course.title" class="thumbnail-image" @error="handleImageError" />
+                <div class="thumbnail-container">
+                  <img v-if="hasValidThumbnailImage(course)" :src="course.image" :alt="course.title" class="thumbnail-image" @error="handleThumbnailError" />
+                  <div v-else class="thumbnail-placeholder">
+                    <div class="thumbnail-icon">📚</div>
+                    <div class="thumbnail-text">{{ course.title }}</div>
+                  </div>
+                </div>
                 <div class="course-overlay">
                   <div class="course-info">
                     <h3 class="course-name">{{ course.title }}</h3>
                     <p class="course-instructor">{{ course.instructor }}</p>
+                    
                   </div>
                 </div>
               </div>
@@ -230,6 +270,7 @@ import { useRouter } from 'vue-router'
 import { enrollCourse } from '@/services/enrollmentService'
 import { ref } from 'vue'
 import { useToast } from 'vue-toastification'
+import { courseService } from '@/services/courseService'
 
 const coursesStore = useCoursesStore()
 const authStore = useAuthStore()
@@ -246,8 +287,54 @@ const isLoading = computed(() => coursesStore.isLoading)
 const hasError = computed(() => coursesStore.hasError)
 const error = computed(() => coursesStore.error)
 
+// Debug computed để theo dõi trạng thái enrollment
+const enrollmentDebug = computed(() => ({
+  courseId: props.courseId,
+  courseIdType: typeof props.courseId,
+  isEnrolled: isEnrolled.value,
+  userEnrollments: userEnrollments.value,
+  userEnrollmentsCount: userEnrollments.value.length
+}))
+
+// Computed để kiểm tra có hình ảnh hợp lệ không
+const hasValidImage = computed(() => {
+  const imageUrl = course.value.imageUrl || course.value.image
+  return imageUrl && imageUrl.trim() !== '' && imageUrl !== 'null' && imageUrl !== 'undefined'
+})
+
 const handleImageError = (event) => {
-  event.target.src = 'https://via.placeholder.com/800x400?text=Khóa+học'
+  // Ẩn hình ảnh lỗi và hiển thị placeholder
+  event.target.style.display = 'none'
+  const container = event.target.parentElement
+  if (container) {
+    container.innerHTML = `
+      <div class="course-placeholder">
+        <div class="placeholder-icon">📚</div>
+        <div class="placeholder-title">${course.value.title || course.value.name || 'Khóa học'}</div>
+        <div class="placeholder-subtitle">Học tập trực tuyến</div>
+      </div>
+    `
+  }
+}
+
+const hasValidThumbnailImage = (course) => {
+  const imageUrl = course.image
+  return imageUrl && imageUrl.trim() !== '' && imageUrl !== 'null' && imageUrl !== 'undefined'
+}
+
+const handleThumbnailError = (event) => {
+  // Ẩn hình ảnh lỗi và hiển thị placeholder cho thumbnail
+  event.target.style.display = 'none'
+  const container = event.target.parentElement
+  if (container) {
+    const courseTitle = event.target.alt || 'Khóa học'
+    container.innerHTML = `
+      <div class="thumbnail-placeholder">
+        <div class="thumbnail-icon">📚</div>
+        <div class="thumbnail-text">${courseTitle}</div>
+      </div>
+    `
+  }
 }
 
 const isYoutubeUrl = (url) => /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\//.test(url || '')
@@ -267,6 +354,46 @@ const retryLoad = async () => {
 const enrollLoading = ref(false)
 const enrollError = ref('')
 const enrollSuccess = ref(false)
+const isEnrolled = ref(false)
+const checkingEnrollment = ref(false)
+
+const checkEnrollmentStatus = async () => {
+  if (!authStore.user?.id) return
+  
+  checkingEnrollment.value = true
+  try {
+    const userCourses = await courseService.getUserRegisteredCourses(authStore.user.id)
+    console.log('User enrollments:', userCourses)
+    console.log('Current course ID:', props.courseId, typeof props.courseId)
+    
+    // So sánh chặt chẽ hơn để tránh lỗi type mismatch
+    isEnrolled.value = userCourses.some(enrollment => {
+      // API trả về object với 'id' thay vì 'courseId'
+      const enrollmentCourseId = enrollment.id || enrollment.courseId
+      const currentCourseId = props.courseId
+      
+      console.log('Comparing:', enrollmentCourseId, 'with', currentCourseId)
+      
+      const isMatch = enrollmentCourseId === currentCourseId || 
+                     enrollmentCourseId === parseInt(currentCourseId) || 
+                     enrollmentCourseId === currentCourseId.toString() ||
+                     parseInt(enrollmentCourseId) === parseInt(currentCourseId)
+      
+      if (isMatch) {
+        console.log('Found matching enrollment:', enrollment)
+      }
+      
+      return isMatch
+    })
+    
+    console.log('Is enrolled:', isEnrolled.value)
+  } catch (err) {
+    console.error('Error checking enrollment status:', err)
+    isEnrolled.value = false
+  } finally {
+    checkingEnrollment.value = false
+  }
+}
 
 const handleEnroll = async () => {
   enrollLoading.value = true
@@ -276,6 +403,7 @@ const handleEnroll = async () => {
     const userId = authStore.user?.id
     await enrollCourse(userId, props.courseId)
     enrollSuccess.value = true
+    isEnrolled.value = true
     toast.success('Đăng ký thành công!')
   } catch (err) {
     enrollError.value = err?.response?.data?.message || 'Đăng ký thất bại'
@@ -285,8 +413,27 @@ const handleEnroll = async () => {
   }
 }
 
-onMounted(async () => {
+const loadCourseData = async () => {
+  // Tải khóa học hiện tại
   await coursesStore.fetchCourseById(props.courseId)
+  
+  // Tải tất cả khóa học để có dữ liệu cho phần khóa học liên quan
+  if (coursesStore.courses.length === 0) {
+    await coursesStore.fetchCourses()
+  }
+  
+  // Kiểm tra trạng thái đăng ký của user
+  await Promise.all([
+    checkEnrollmentStatus(),
+    checkUserEnrollments()
+  ])
+}
+
+onMounted(async () => {
+  // Scroll to top when component mounts
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+  
+  await loadCourseData()
 })
 
 // Course features data
@@ -317,16 +464,78 @@ const mockReviews = [
   { name: 'Trần Quốc', avatar: 'https://randomuser.me/api/portraits/men/23.jpg', text: 'Rất hài lòng với chất lượng khóa học.' }
 ]
 
-const mockRelatedCourses = [
-  { title: 'Kỹ năng sống cho học sinh', instructor: 'Nguyễn Văn A', image: 'https://via.placeholder.com/300x200?text=Course+1' },
-  { title: 'Phòng chống bạo lực học đường', instructor: 'Trần Thị B', image: 'https://via.placeholder.com/300x200?text=Course+2' },
-  { title: 'Giáo dục giới tính', instructor: 'Lê Văn C', image: 'https://via.placeholder.com/300x200?text=Course+3' },
-  { title: 'Kỹ năng giao tiếp', instructor: 'Phạm Thị D', image: 'https://via.placeholder.com/300x200?text=Course+4' }
-]
+// Computed property để lấy khóa học liên quan ngẫu nhiên
+const relatedCourses = computed(() => {
+  const allCourses = coursesStore.courses
+  const currentCourseId = props.courseId
+  
+  console.log('Current course ID:', currentCourseId, typeof currentCourseId)
+  console.log('All courses:', allCourses.map(c => ({ id: c.id, title: c.title || c.name })))
+  
+  // Lọc bỏ khóa học hiện tại và lấy ngẫu nhiên 4 khóa học khác
+  const otherCourses = allCourses.filter(course => {
+    // So sánh cả string và number để đảm bảo chính xác
+    const isCurrentCourse = course.id === currentCourseId || 
+                           course.id === parseInt(currentCourseId) || 
+                           course.id === currentCourseId.toString()
+    
+    if (isCurrentCourse) {
+      console.log('Filtering out current course:', course.id, course.title || course.name)
+    }
+    
+    return !isCurrentCourse
+  })
+  
+  console.log('Other courses after filtering:', otherCourses.map(c => ({ id: c.id, title: c.title || c.name })))
+  
+  // Shuffle array để lấy ngẫu nhiên
+  const shuffled = [...otherCourses].sort(() => 0.5 - Math.random())
+  
+  // Lấy 4 khóa học đầu tiên
+  const result = shuffled.slice(0, 4).map(course => ({
+    title: course.title || course.name,
+    instructor: 'Chuyên gia Giáo dục', // Có thể thêm trường instructor vào course sau
+    image: course.imageUrl || course.image || null, // Để null để hiển thị placeholder
+    id: course.id
+  }))
+  
+  console.log('Related courses result:', result)
+  return result
+})
 
-const viewCourse = (courseTitle) => {
-  console.log('Viewing course:', courseTitle)
-  alert(`Đang xem khóa học: ${courseTitle}`)
+// Computed property để kiểm tra trạng thái đăng ký của các khóa học liên quan
+const userEnrollments = ref([])
+
+const checkUserEnrollments = async () => {
+  if (!authStore.user?.id) return
+  
+  try {
+    const enrollments = await courseService.getUserRegisteredCourses(authStore.user.id)
+    userEnrollments.value = enrollments
+  } catch (err) {
+    console.error('Error fetching user enrollments:', err)
+    userEnrollments.value = []
+  }
+}
+
+const isCourseEnrolled = (courseId) => {
+  return userEnrollments.value.some(enrollment => {
+    const enrollmentCourseId = enrollment.id || enrollment.courseId
+    const targetCourseId = courseId
+    
+    return enrollmentCourseId === targetCourseId || 
+           enrollmentCourseId === parseInt(targetCourseId) || 
+           enrollmentCourseId === targetCourseId.toString() ||
+           parseInt(enrollmentCourseId) === parseInt(targetCourseId)
+  })
+}
+
+const viewCourse = (courseId) => {
+  console.log('Viewing course:', courseId)
+  router.push(`/courses/${courseId}`).then(() => {
+    // Scroll to top after navigation
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  })
 }
 
 const editCourse = (courseId) => {
@@ -566,6 +775,19 @@ const editCourse = (courseId) => {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
+.btn-enrolled {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  cursor: not-allowed;
+  opacity: 0.9;
+}
+
+.btn-enrolled:hover {
+  transform: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
 .btn-icon {
   font-size: 1.1rem;
 }
@@ -605,6 +827,77 @@ const editCourse = (courseId) => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.course-image-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.course-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-align: center;
+  padding: 2rem;
+  border-radius: 1rem;
+}
+
+.placeholder-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.8;
+}
+
+.placeholder-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.placeholder-subtitle {
+  font-size: 1rem;
+  opacity: 0.8;
+  font-weight: 400;
+}
+
+.thumbnail-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.thumbnail-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-align: center;
+  padding: 1rem;
+}
+
+.thumbnail-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.8;
+}
+
+.thumbnail-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* Sections */
@@ -679,6 +972,80 @@ const editCourse = (courseId) => {
   line-height: 1.5;
 }
 
+/* Description Grid */
+.description-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.description-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  text-align: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid #e5e7eb;
+}
+
+.description-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.description-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.description-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #1f2937;
+}
+
+.description-text {
+  color: #6b7280;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+/* Curriculum Grid */
+.curriculum-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.curriculum-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  text-align: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid #e5e7eb;
+}
+
+.curriculum-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.curriculum-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.curriculum-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #1f2937;
+}
+
 /* Description */
 .description-content {
   max-width: 800px;
@@ -725,6 +1092,7 @@ const editCourse = (courseId) => {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .audience-tag {
@@ -794,6 +1162,7 @@ const editCourse = (courseId) => {
   gap: 0.75rem;
   padding: 0.75rem 0;
   border-bottom: 1px solid #f3f4f6;
+  text-align: left;
 }
 
 .lesson-item:last-child {
@@ -802,11 +1171,13 @@ const editCourse = (courseId) => {
 
 .lesson-icon {
   font-size: 1.25rem;
+  color: #3b82f6;
 }
 
 .lesson-text {
   color: #374151;
   font-size: 1rem;
+  flex: 1;
 }
 
 /* Instructors */
@@ -998,6 +1369,28 @@ const editCourse = (courseId) => {
 .course-instructor {
   font-size: 0.875rem;
   opacity: 0.8;
+}
+
+.course-badge {
+  background: rgba(59, 130, 246, 0.9);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+  display: inline-block;
+}
+
+.enrollment-badge {
+  background: rgba(16, 185, 129, 0.9);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+  display: inline-block;
 }
 
 /* Not Found */
