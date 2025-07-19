@@ -50,7 +50,7 @@ const routes = [
   {
     path: '/community-programs/:id',
     name: 'community-program-detail',
-    component: () => import('../views/CommunityProgramView.vue'),
+    component: () => import('../views/CommunityProgramsView.vue'),
     meta: { requiresAuth: true, roles: ['user', 'admin'] }
   },
   {
@@ -64,7 +64,7 @@ const routes = [
     path: '/assessments',
     name: 'assessments',
     component: () => import('../views/AssessmentListView.vue'),
-    meta: { requiresAuth: true, roles: ['user', 'admin'] }
+    meta: { requiresAuth: true, roles: ['user', 'admin','customer'] }
   },
   {
     path: '/assessments/:id',
@@ -100,7 +100,7 @@ const routes = [
     path: '/profile',
     name: 'profile',
     component: () => import('../views/UserInformationView.vue'),
-    meta: { requiresAuth: true, roles: ['user', 'admin', 'consultant'] }
+    meta: { requiresAuth: true, roles: ['customer', 'admin', 'consultant'] }
   },
   {
     path: '/blog/:id',

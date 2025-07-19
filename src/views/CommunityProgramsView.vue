@@ -1,4 +1,4 @@
-<template>Add commentMore actions
+<template>
   <div class="community-programs">
     <h2>Danh sách chương trình cộng đồng</h2>
     <button v-if="isAdmin" class="add-btn" @click="openFormModal()">Thêm chương trình mới</button>

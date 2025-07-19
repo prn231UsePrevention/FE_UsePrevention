@@ -7,40 +7,40 @@
       <nav class="navbar">
         <!-- Guest Links -->
         <template v-if="!isLoggedIn">
-          <router-link to="/login" exact-active-class="active">Đăng nhập</router-link>
-          <router-link to="/register" exact-active-class="active">Đăng ký</router-link>
+          <router-link to="/login" class="nav-link" exact-active-class="active">Đăng nhập</router-link>
+          <router-link to="/register" class="nav-link" exact-active-class="active">Đăng ký</router-link>
         </template>
 
         <!-- User Links -->
         <template v-if="isLoggedIn && userRole === 'customer'">
-
-          <router-link to="/" exact-active-class="active">Trang chủ</router-link>
-          <router-link to="/courses" exact-active-class="active">Các khóa học</router-link>
-          <router-link to="/community-programs" exact-active-class="active">Chương trình cộng đồng</router-link>
-          <router-link to="/assessments" exact-active-class="active">Khảo sát</router-link>
-          <router-link to="/consultants" exact-active-class="active">Tư vấn</router-link>
-          <router-link to="/my-participations" exact-active-class="active">Chương trình của tôi</router-link>
-          <router-link to="/appointments" exact-active-class="active">Cuộc hẹn</router-link>
+          <router-link to="/" class="nav-link home-btn" exact-active-class="active">Trang chủ</router-link>
+          <router-link to="/courses" class="nav-link" exact-active-class="active">Các khóa học</router-link>
+          <router-link to="/community-programs" class="nav-link" exact-active-class="active">Chương trình cộng đồng</router-link>
+          <router-link to="/assessments" class="nav-link" exact-active-class="active">Khảo sát</router-link>
+          <router-link to="/consultants" class="nav-link" exact-active-class="active">Tư vấn</router-link>
+          <router-link to="/my-participations" class="nav-link" exact-active-class="active">Chương trình của tôi</router-link>
+          <router-link to="/appointments" class="nav-link" exact-active-class="active">Cuộc hẹn</router-link>
         </template>
 
         <!-- Admin Links -->
         <template v-if="isLoggedIn && userRole === 'admin'">
-          <router-link to="/admin/dashboard" exact-active-class="active">Dashboard</router-link>
-          <router-link to="/admin/courses" exact-active-class="active">Quản lý khóa học</router-link>
-          <router-link to="/community-programs" exact-active-class="active">Quản lý chương trình</router-link>
-          <router-link to="/admin/surveys" exact-active-class="active">Quản lý khảo sát</router-link>
-          <router-link to="/admin/consultants" exact-active-class="active">Quản lý chuyên viên</router-link>
+          <router-link to="/admin/dashboard" class="nav-link" exact-active-class="active">Dashboard</router-link>
+          <router-link to="/admin/courses" class="nav-link" exact-active-class="active">Quản lý khóa học</router-link>
+          <router-link to="/community-programs" class="nav-link" exact-active-class="active">Quản lý chương trình</router-link>
+          <router-link to="/admin/surveys" class="nav-link" exact-active-class="active">Quản lý khảo sát</router-link>
+          <router-link to="/admin/consultants" class="nav-link" exact-active-class="active">Quản lý chuyên viên</router-link>
         </template>
         <!-- Consultant Links -->
         <template v-if="isLoggedIn && userRole === 'consultant'">
-          <router-link to="/appointment" exact-active-class="active">Cuộc hẹn</router-link>
+          <router-link to="/appointment" class="nav-link" exact-active-class="active">Cuộc hẹn</router-link>
         </template>
-        <!-- User Info & Logout -->
-        <div v-if="isLoggedIn" class="user-info">
-          <router-link to="/profile" class="user-name">{{ authStore.user?.email || 'Người dùng' }}</router-link>
-          <a href="#" @click.prevent="authStore.logout" class="logout-link">Đăng xuất</a>
-        </div>
       </nav>
+      
+      <!-- User Info & Logout - Moved outside navbar for better layout -->
+      <div v-if="isLoggedIn" class="user-info">
+        <router-link to="/profile" class="user-name">{{ authStore.user?.fullName || 'Người dùng' }}</router-link>
+        <a href="#" @click.prevent="authStore.logout" class="logout-link">Đăng xuất</a>
+      </div>
     </div>
   </header>
 </template>
@@ -61,154 +61,258 @@ export default {
 
 <style scoped>
 .main-header {
-  background-color: rgba(255, 255, 255, 0.9);
-  /* Subtle transparency */
-  box-shadow: var(--shadow-1);
-  /* Light shadow */
-  padding: var(--spacing-md) 0;
-  /* More vertical padding */
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 12px 0;
   position: sticky;
   top: 0;
   z-index: 1000;
   width: 100%;
-  /* Full width */
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--spacing-lg);
-  /* More horizontal padding */
+  padding: 0 20px;
+  gap: 12px;
 }
 
 .logo a {
-  font-size: var(--font-size-xl);
-  font-weight: bold;
-  color: var(--primary-color);
+  font-size: 24px;
+  font-weight: 700;
+  color: #2563eb;
   text-decoration: none;
-  letter-spacing: 1px;
-  font-family: var(--font-family-sans);
+  letter-spacing: -0.5px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   transition: color 0.2s ease-in-out;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 140px;
 }
 
 .logo a:hover {
-  color: var(--primary-dark);
+  color: #1d4ed8;
 }
 
 .navbar {
   display: flex;
-  gap: var(--spacing-xs);
-  /* Further reduced gap */
+  gap: 6px;
   align-items: center;
   flex-wrap: nowrap;
-  /* Ensure no wrapping */
   overflow-x: auto;
-  /* Allow horizontal scroll if content overflows */
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  flex: 1;
+  min-width: 0;
+  padding: 0 4px;
+  justify-content: flex-start;
 }
 
-.navbar a {
+.navbar::-webkit-scrollbar {
+  display: none;
+}
+
+.nav-link {
   white-space: nowrap;
-  /* Prevent text from wrapping */
-  color: var(--text-color-primary);
+  color: #374151;
   text-decoration: none;
   font-weight: 500;
-  font-size: var(--font-size-sm);
-  /* Reduced font size */
-  padding: var(--spacing-xs) var(--spacing-sm);
-  /* Reduced horizontal padding */
-  border-radius: var(--border-radius-md);
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  font-family: var(--font-family-sans);
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: all 0.2s ease-in-out;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: transparent;
+  position: relative;
+  flex-shrink: 0;
+  display: inline-block;
 }
 
-.navbar a.active,
-.navbar a:hover {
-  background-color: var(--primary-light);
-  color: var(--surface-color);
-  box-shadow: var(--shadow-1);
+.nav-link:hover {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+.nav-link.active {
+  background-color: #dbeafe;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.home-btn {
+  background-color: #3b82f6;
+  color: white;
+  font-weight: 600;
+}
+
+.home-btn:hover {
+  background-color: #2563eb;
+  color: white;
+}
+
+.home-btn.active {
+  background-color: #1d4ed8;
+  color: white;
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
-  /* Reduced gap */
-  margin-left: var(--spacing-md);
-  /* Adjusted space from other nav items */
+  gap: 10px;
   white-space: nowrap;
-  /* Prevent text from wrapping */
+  padding-left: 12px;
+  border-left: 1px solid #e5e7eb;
+  flex-shrink: 0;
+  min-width: 160px;
 }
 
 .user-name {
-  font-weight: bold;
-  color: var(--primary-dark);
+  font-weight: 600;
+  color: #374151;
   cursor: pointer;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--border-radius-sm);
+  padding: 6px 8px;
+  border-radius: 4px;
   transition: background-color 0.2s ease-in-out;
+  font-size: 13px;
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
 }
 
 .user-name:hover {
-  background-color: var(--background-color);
+  background-color: #f3f4f6;
+  color: #1f2937;
 }
 
 .logout-link {
-  color: var(--error-color);
+  color: #dc2626;
   font-weight: 500;
   cursor: pointer;
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--border-radius-sm);
-  transition: background-color 0.2s ease-in-out;
+  padding: 6px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease-in-out;
+  font-size: 13px;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
 .logout-link:hover {
-  background-color: rgba(var(--error-color), 0.1);
+  background-color: #fef2f2;
+  color: #b91c1c;
 }
 
-/* Adjustments for smaller screens */
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .container {
+    max-width: 1200px;
+    gap: 8px;
+    padding: 0 16px;
+  }
+  
+  .user-name {
+    max-width: 100px;
+  }
+  
+  .user-info {
+    min-width: 140px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .container {
+    gap: 6px;
+    padding: 0 12px;
+  }
+  
+  .user-name {
+    max-width: 80px;
+  }
+  
+  .nav-link {
+    font-size: 12px;
+    padding: 5px 8px;
+  }
+  
+  .user-info {
+    min-width: 120px;
+    gap: 8px;
+  }
+}
+
 @media (max-width: 768px) {
   .container {
     flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-sm);
+    align-items: stretch;
+    gap: 12px;
+    padding: 0 16px;
   }
 
   .navbar {
     width: 100%;
     flex-wrap: nowrap;
-    /* Prevent wrapping */
     overflow-x: auto;
-    /* Enable horizontal scrolling if needed */
     -webkit-overflow-scrolling: touch;
-    /* Smooth scrolling on iOS */
-    gap: var(--spacing-xs);
-    /* Smaller gap on mobile */
-    padding-bottom: var(--spacing-xs);
-    /* Add some padding for scrollbar */
+    gap: 4px;
+    padding-bottom: 4px;
+    justify-content: flex-start;
+    padding: 0 2px;
   }
 
-  .navbar a,
-  .user-info {
+  .nav-link {
     flex-shrink: 0;
-    /* Prevent items from shrinking */
     text-align: center;
     justify-content: center;
+    font-size: 12px;
+    padding: 5px 8px;
   }
 
   .user-info {
     margin-left: 0;
-    /* Remove left margin on mobile */
     width: 100%;
-    /* Take full width */
-    padding: var(--spacing-xs) 0;
-    /* Add some padding */
-    border-top: 1px solid var(--background-color);
-    /* Separator */
+    padding: 8px 0;
+    border-top: 1px solid #e5e7eb;
+    border-left: none;
+    justify-content: space-between;
+    gap: 16px;
+    min-width: auto;
+  }
+
+  .user-name {
+    max-width: none;
+    flex: 1;
+  }
+
+  .logo a {
+    font-size: 20px;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 12px;
+  }
+  
+  .nav-link {
+    font-size: 11px;
+    padding: 4px 6px;
+  }
+  
+  .user-name,
+  .logout-link {
+    font-size: 12px;
+    padding: 4px 6px;
+  }
+  
+  .user-info {
+    gap: 12px;
   }
 }
 </style>
