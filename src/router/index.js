@@ -70,13 +70,13 @@ const routes = [
     path: '/assessments/:id',
     name: 'take-assessment',
     component: () => import('../views/TakeAssessmentView.vue'),
-    meta: { requiresAuth: true, roles: ['user'] }
+    meta: { requiresAuth: true, roles: ['customer','user'] }
   },
   {
     path: '/assessment-result/:resultId',
     name: 'assessment-result',
     component: () => import('../views/AssessmentResultView.vue'),
-    meta: { requiresAuth: true, roles: ['user', 'admin'] }
+    meta: { requiresAuth: true, roles: ['user', 'admin','customer',] }
   },
   {
     path: '/consultants',
