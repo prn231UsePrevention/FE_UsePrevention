@@ -21,7 +21,7 @@
         </div>
 
         <!-- Suggested Courses -->
-        <div v-if="recommendedCourses.length > 0" class="mt-6">
+        <div v-if="suggestedCourses.length > 0" class="mt-6">
     <h3 class="text-xl font-semibold">Các khóa học được đề xuất</h3>
     <ul class="list-disc list-inside mt-2">
         <li v-for="course in recommendedCourses" :key="course.id">
@@ -44,6 +44,13 @@
             <li v-for="program in suggestedCommunityPrograms" :key="program.id">{{ program.title }}</li>
           </ul>
           <router-link to="/community-programs" class="btn btn-info">Khám phá chương trình cộng đồng</router-link>
+        </div>
+
+        <!-- Suggestion for consulting a doctor if score is less than 5 -->
+        <div v-if="result.score < 5" class="suggestion-card danger">
+          <h3>Cần tư vấn chuyên gia</h3>
+          <p>Điểm số của bạn cho thấy bạn có thể cần sự hỗ trợ từ chuyên gia. Chúng tôi khuyến khích bạn đặt lịch hẹn với bác sĩ tư vấn để được hỗ trợ kịp thời.</p>
+          <router-link :to="{ name: 'appointments' }" class="btn btn-danger">Đặt lịch tư vấn ngay</router-link>
         </div>
       </div>
 
@@ -70,7 +77,7 @@
 
 <script>
 import assessmentService from '@/services/assessmentService';
-import { getAllCourses } from '@/services/courseService';
+import courseService from '@/services/courseService';
 import { getAllCommunityPrograms } from '@/services/communityProgramService'; // Import service
 
 export default {
@@ -160,7 +167,7 @@ export default {
         const token = localStorage.getItem('token');
         // Fetch courses and programs in parallel
         const [coursesResponse, programsResponse] = await Promise.all([
-          getAllCourses(token),
+          courseService.getAllCourses(token),
           getAllCommunityPrograms(token)
         ]);
         this.allCourses = coursesResponse.data;
