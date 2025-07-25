@@ -2,7 +2,7 @@
   <div class="consultant-appointments-wrapper">
     <h2>Quản lý cuộc hẹn</h2>
 
-    <!-- Tạo slot mới -->
+    <!-- Tạo slot mới + Tạo lịch tái khám -->
     <div class="slot-creator">
       <label>
         Chọn khung giờ:
@@ -14,6 +14,49 @@
       <button @click="createNewSlot" :disabled="!newSlotTime">
         Tạo slot
       </button>
+      <button @click="openRevisitModal" style="margin-left: 1rem">
+        Tạo lịch tái khám
+      </button>
+    </div>
+
+    <!-- Modal tạo lịch tái khám -->
+    <div v-if="revisitModal.visible" class="modal-overlay">
+      <div class="modal-content card">
+        <h3>Tạo lịch tái khám</h3>
+        <button class="modal-close" @click="closeRevisitModal">×</button>
+        <div v-if="revisitModal.loading">Đang tạo lịch tái khám...</div>
+        <div v-else>
+          <label>Chọn khách hàng:
+            <select v-model="revisitModal.selectedUserId">
+              <option v-for="user in revisitModal.userOptions" :key="user.userId" :value="user.userId">
+                {{ user.userFullName }}
+              </option>
+            </select>
+          </label>
+          <br />
+          <label>Chọn thời gian:
+            <input type="datetime-local" v-model="revisitModal.time" />
+          </label>
+          <br />
+          <label>Ghi chú:
+            <input type="text" v-model="revisitModal.note" placeholder="Ghi chú (tùy chọn)" />
+          </label>
+          <br />
+          <label>Chọn cuộc hẹn gốc:
+            <select v-model="revisitModal.parentAppointmentId">
+              <option v-for="app in revisitModal.parentAppointments" :key="app.id" :value="app.id">
+                {{ app.userFullName }} - {{ formatDate(app.startTime) }} {{ formatTime(app.startTime) }}
+              </option>
+            </select>
+          </label>
+          <br />
+          <button @click="createRevisit" :disabled="!revisitModal.selectedUserId || !revisitModal.time || !revisitModal.parentAppointmentId">
+            Xác nhận
+          </button>
+          <button @click="closeRevisitModal" style="margin-left: 1rem">Hủy</button>
+        </div>
+        <div v-if="revisitModal.error" style="color:red">{{ revisitModal.error }}</div>
+      </div>
     </div>
 
     <div v-if="isLoading" class="loading">Đang tải...</div>
@@ -59,7 +102,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAppointmentsStore } from '@/stores/appointments'
 import appointmentService from '@/services/appointmentService'
@@ -142,6 +185,95 @@ const createNewSlot = async () => {
   }
 }
 
+const revisitModal = ref({
+  visible: false,
+  loading: false,
+  error: '',
+  selectedUserId: '',
+  time: '',
+  note: '',
+  userOptions: [],
+  parentAppointments: [],
+  parentAppointmentId: ''
+})
+
+function openRevisitModal() {
+  revisitModal.value.visible = true
+  revisitModal.value.loading = false
+  revisitModal.value.error = ''
+  revisitModal.value.selectedUserId = ''
+  revisitModal.value.time = ''
+  revisitModal.value.note = ''
+  revisitModal.value.parentAppointments = []
+  revisitModal.value.parentAppointmentId = ''
+  // Lấy danh sách khách hàng đã từng có appointment với consultant này
+  const users = []
+  consultantAppointments.value.forEach(app => {
+    if (app.userId && app.userFullName) {
+      if (!users.find(u => u.userId === app.userId)) {
+        users.push({ userId: app.userId, userFullName: app.userFullName })
+      }
+    }
+  })
+  revisitModal.value.userOptions = users
+}
+
+// Theo dõi khi chọn user để filter lại parentAppointments
+watch(
+  () => revisitModal.value.selectedUserId,
+  (userId) => {
+    if (!userId) {
+      revisitModal.value.parentAppointments = []
+      revisitModal.value.parentAppointmentId = ''
+      return
+    }
+    // Lọc appointment của user đã chọn và đã hoàn thành
+    const apps = consultantAppointments.value.filter(app => String(app.userId) === String(userId) && app.status === 'Completed')
+    revisitModal.value.parentAppointments = apps
+    revisitModal.value.parentAppointmentId = apps.length ? apps[0].id : ''
+  }
+)
+
+function closeRevisitModal() {
+  revisitModal.value.visible = false
+}
+
+async function createRevisit() {
+  revisitModal.value.loading = true
+  revisitModal.value.error = ''
+  try {
+    const token = localStorage.getItem('token')
+    const res = await fetch('https://localhost:7233/api/Appointments/revisit', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({
+        previousAppointmentId: Number(revisitModal.value.parentAppointmentId),
+        newTime: new Date(revisitModal.value.time).toISOString()
+      })
+    })
+    if (res.ok) {
+      alert('Tạo lịch tái khám thành công!')
+      revisitModal.value.visible = false
+      await loadSlots()
+    } else {
+      const err = await res.json().catch(() => ({}))
+      revisitModal.value.error = 'Tạo lịch tái khám thất bại! ' + (err.message || '')
+    }
+  } catch (e) {
+    revisitModal.value.error = 'Lỗi kết nối khi tạo lịch tái khám!'
+  } finally {
+    revisitModal.value.loading = false
+  }
+}
+
+function parentAppsConsultantId() {
+  // Lấy consultantId từ appointment đầu tiên (vì tất cả đều cùng consultant)
+  const app = consultantAppointments.value.find(a => a.consultantId)
+  return app ? app.consultantId : null
+}
 
 // chung hàm load cả scheduled + available
 const loadSlots = async () => {
@@ -235,4 +367,107 @@ h2 { text-align: center; margin-bottom: 1rem; }
 .actions button:nth-child(1) { background: #4caf50; color: white; }
 .actions button:nth-child(2) { background: #1976d2; color: white; }
 .actions button:nth-child(3) { background: #e53935; color: white; }
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal-content {
+  background: #fff;
+  padding: 2.2rem 2.5rem 2rem 2.5rem;
+  border-radius: 16px;
+  min-width: 350px;
+  max-width: 95vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+}
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1976d2;
+  text-align: center;
+}
+.modal-content label {
+  display: block;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  color: #333;
+}
+.modal-content select,
+.modal-content input[type="datetime-local"],
+.modal-content input[type="text"] {
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-size: 1rem;
+  margin-top: 0.3rem;
+  margin-bottom: 0.5rem;
+  transition: border 0.2s;
+}
+.modal-content select:focus,
+.modal-content input[type="datetime-local"]:focus,
+.modal-content input[type="text"]:focus {
+  border: 1.5px solid #1976d2;
+  outline: none;
+}
+.modal-content button {
+  min-width: 100px;
+  padding: 0.5rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-top: 1rem;
+  background: #1976d2;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.modal-content button:disabled {
+  background: #b0b0b0;
+  color: #fff;
+  cursor: not-allowed;
+}
+.modal-content button + button {
+  background: #e0e0e0;
+  color: #333;
+  margin-left: 1rem;
+}
+.modal-content button + button:hover {
+  background: #d0d0d0;
+}
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.modal-close:hover {
+  color: #1976d2;
+}
+@media (max-width: 600px) {
+  .modal-content {
+    padding: 1.2rem 0.7rem 1rem 0.7rem;
+    min-width: 0;
+  }
+  .modal-content h3 {
+    font-size: 1.1rem;
+  }
+}
 </style>

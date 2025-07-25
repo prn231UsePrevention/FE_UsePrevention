@@ -30,7 +30,7 @@ const success = ref(false)
 const loading = ref(false)
 const authStore = useAuthStore()
 
-const API_URL = 'http://localhost:5153/api/Users/login'
+const API_URL = '/api/Users/login'
 
 function parseJwt(token) {
   try {
