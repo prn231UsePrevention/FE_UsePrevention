@@ -51,7 +51,7 @@ const routes = [
     path: '/community-programs/:id',
     name: 'community-program-detail',
     component: () => import('../views/CommunityProgramsView.vue'),
-    meta: { requiresAuth: true, roles: ['user', 'admin'] }
+    meta: { requiresAuth: true, roles: ['customer', 'admin'] }
   },
   {
     path: '/my-participations',
@@ -64,19 +64,19 @@ const routes = [
     path: '/assessments',
     name: 'assessments',
     component: () => import('../views/AssessmentListView.vue'),
-    meta: { requiresAuth: true, roles: ['user', 'admin','customer'] }
+    meta: { requiresAuth: true, roles: ['user', 'admin', 'customer'] }
   },
   {
     path: '/assessments/:id',
     name: 'take-assessment',
     component: () => import('../views/TakeAssessmentView.vue'),
-    meta: { requiresAuth: true, roles: ['customer','user'] }
+    meta: { requiresAuth: true, roles: ['customer', 'user'] }
   },
   {
     path: '/assessment-result/:resultId',
     name: 'assessment-result',
     component: () => import('../views/AssessmentResultView.vue'),
-    meta: { requiresAuth: true, roles: ['user', 'admin','customer',] }
+    meta: { requiresAuth: true, roles: ['user', 'admin', 'customer',] }
   },
   {
     path: '/consultants',
@@ -100,13 +100,25 @@ const routes = [
     path: '/profile',
     name: 'profile',
     component: () => import('../views/UserInformationView.vue'),
-    meta: { requiresAuth: true, roles: ['customer', 'admin', 'consultant'] }
+    meta: { requiresAuth: true, roles: ['customer', 'admin', 'Consultant'] }
   },
   {
     path: '/blog/:id',
     name: 'blog-detail',
     component: () => import('../views/BlogPostDetailView.vue'),
     // No requiresAuth, as blog posts are public
+  },
+  {
+    path: '/consultants/:id/slots',
+    name: 'consultant-slots',
+    component: () => import('../views/ConsultantSlotsView.vue'),
+    meta: { requiresAuth: true, roles: ['customer'] }
+  },
+  {
+    path: '/all-available-slots',
+    name: 'all-available-slots',
+    component: () => import('../views/AllAvailableSlotsView.vue'),
+    meta: { requiresAuth: true, roles: ['customer'] }
   },
   // Admin Routes
   {

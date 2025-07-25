@@ -27,18 +27,28 @@
             <td>{{ formatTime(appointment.startTime) }} - {{ formatTime(appointment.endTime) }}</td>
             <td>{{ appointment.status }}</td>
             <td>{{ appointment.note }}</td>
-            <td>
-              <button
-                class="delete-btn"
-                @click="cancelAppointment(appointment.id)"
-                :disabled="appointment.status !== 'Pending'"
-              >
-                Hủy
-              </button>
-            </td>
+          <td>
+  <template v-if="appointment.status === 'Completed'">
+    <template v-if="appointment.hasFeedback">
+      <span class="feedback-done">Đã feedback</span>
+    </template>
+    <template v-else>
+      <button class="feedback-btn" @click="openFeedback(appointment)">Feedback</button>
+    </template>
+  </template>
+  <template v-else>
+    <button
+      class="delete-btn"
+      @click="cancelAppointment(appointment.id)"
+      :disabled="appointment.status !== 'Pending'"
+    >
+      Hủy
+    </button>
+  </template>
+</td>
           </tr>
           <tr v-if="!isLoading && userAppointments.length === 0">
-            <td colspan="5" class="no-data">Bạn chưa có cuộc hẹn nào</td>
+            <td colspan="6" class="no-data">Bạn chưa có cuộc hẹn nào</td>
           </tr>
         </tbody>
       </table>
@@ -59,19 +69,75 @@
         />
       </div>
     </div>
+
+    <!-- Modal Feedback -->
+    <div v-if="showFeedbackModal" class="modal-overlay" @click.self="closeFeedbackModal">
+      <div class="modal-content feedback-modal">
+        <button class="modal-close" @click="closeFeedbackModal">×</button>
+        <h3 class="modal-title">Gửi Feedback cho cuộc hẹn</h3>
+        <form @submit.prevent="submitFeedbackForm" class="feedback-form">
+          <div class="form-group">
+            <label>Đánh giá:</label>
+            <div class="star-rating">
+              <span
+                v-for="star in 5"
+                :key="star"
+                class="star"
+                :class="{ filled: star <= feedback.rating }"
+                @click="setRating(star)"
+              >&#9733;</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Nhận xét:</label>
+            <textarea v-model="feedback.comment" required placeholder="Nhận xét của bạn..." />
+          </div>
+          <div class="form-group">
+            <label>Mức độ hài lòng:</label>
+            <div class="summary-radio-group">
+              <label>
+                <input type="radio" value="Thích" v-model="feedback.assessmentSummary" />
+                Thích
+              </label>
+              <label>
+                <input type="radio" value="Bình thường" v-model="feedback.assessmentSummary" />
+                Bình thường
+              </label>
+              <label>
+                <input type="radio" value="Không thích" v-model="feedback.assessmentSummary" />
+                Không thích
+              </label>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="feedback-btn">Gửi</button>
+            <button @click="closeFeedbackModal" type="button" class="delete-btn">Đóng</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { useToast } from 'vue-toastification'
 import { useAppointmentsStore } from '@/stores/appointments'
 import AppointmentForm from '@/components/AppointmentForm.vue'
+import axios from 'axios'
 
 // store
 const store = useAppointmentsStore()
-
+const toast = useToast()
 // reactive
 const showModal = ref(false)
+const showFeedbackModal = ref(false)
+const selectedAppointment = ref(null)
+const feedback = ref({
+  rating: 5,
+  comment: '',
+  assessmentSummary: ''
+})
 
 // computed
 const userAppointments = computed(() => store.userAppointments)
@@ -85,6 +151,9 @@ const formatDate = (d) => new Date(d).toLocaleDateString('vi-VN')
 const formatTime = (d) =>
   new Date(d).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
 
+function setRating(star){
+  feedback.value.rating = star
+}
 // mở modal
 function openBookModal() {
   showModal.value = true
@@ -93,6 +162,56 @@ function openBookModal() {
 // đóng modal
 function closeModal() {
   showModal.value = false
+}
+
+// mở modal feedback
+function openFeedback(appointment) {
+  selectedAppointment.value = appointment
+  feedback.value = {
+    rating: 5,
+    comment: '',
+    assessmentSummary: ''
+  }
+  showFeedbackModal.value = true
+}
+
+// đóng modal feedback
+function closeFeedbackModal() {
+  showFeedbackModal.value = false
+}
+
+// gửi feedback
+async function submitFeedbackForm() {
+  try {
+    const token = localStorage.getItem('token')
+    await axios.post('/api/Feedback', {
+      appointmentId: selectedAppointment.value.id,
+      consultantId: selectedAppointment.value.consultantId,
+      rating: feedback.value.rating,
+      comment: feedback.value.comment,
+      assessmentSummary: feedback.value.assessmentSummary
+    }, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    showFeedbackModal.value = false
+    await store.fetchAppointments()
+    toast.success('Gửi feedback thành công!')
+  } catch (e) {
+    if (
+      e.response &&
+      e.response.status === 400 &&
+      e.response.data &&
+      e.response.data.message &&
+      e.response.data.message.includes('Feedback already exists')
+    ) {
+      toast.info('Bạn đã gửi feedback cho cuộc hẹn này rồi!')
+      showFeedbackModal.value = false
+      await store.fetchAppointments()
+    } else {
+      toast.error('Gửi feedback thất bại!')
+    }
+    console.error(e)
+  }
 }
 
 // tạo booking
@@ -130,6 +249,69 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.feedback-modal {
+  width: 420px;
+  max-width: 95vw;
+}
+.feedback-form .form-group {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+.feedback-form label {
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+}
+.feedback-form textarea {
+  min-height: 60px;
+  max-height: 120px;
+}
+.feedback-form textarea,
+.feedback-form input[type="text"] {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  resize: vertical;
+}
+.summary-radio-group {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.3rem;
+}
+.summary-radio-group label {
+  font-weight: 400;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 1rem;
+}
+.star-rating {
+  font-size: 2rem;
+  color: #ffd700;
+  margin-bottom: 0.2rem;
+  user-select: none;
+  display: flex;
+  gap: 2px;
+}
+.star {
+  cursor: pointer;
+  transition: color 0.2s;
+  color: #ccc;
+}
+.star.filled {
+  color: #ffd700;
+}
+.star:hover,
+.star:hover ~ .star {
+  color: #ffb300;
+}
 .user-appointments-wrapper {
   max-width: 900px;
   margin: 2rem auto;
@@ -185,7 +367,21 @@ onMounted(async () => {
   opacity: 0.5;
   cursor: not-allowed;
 }
-
+.feedback-btn {
+  padding: 0.4rem 0.8rem;
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.feedback-btn:hover {
+  opacity: 0.9;
+}
+.feedback-done {
+  color: #43a047;
+  font-weight: 500;
+}
 .loading-table,
 .error-table,
 .no-data {
