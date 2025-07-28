@@ -6,10 +6,7 @@
     <div class="slot-creator">
       <label>
         Chọn khung giờ:
-        <input
-          type="datetime-local"
-          v-model="newSlotTime"
-        />
+        <input type="datetime-local" v-model="newSlotTime" />
       </label>
       <button @click="createNewSlot" :disabled="!newSlotTime">
         Tạo slot
@@ -50,7 +47,8 @@
             </select>
           </label>
           <br />
-          <button @click="createRevisit" :disabled="!revisitModal.selectedUserId || !revisitModal.time || !revisitModal.parentAppointmentId">
+          <button @click="createRevisit"
+            :disabled="!revisitModal.selectedUserId || !revisitModal.time || !revisitModal.parentAppointmentId">
             Xác nhận
           </button>
           <button @click="closeRevisitModal" style="margin-left: 1rem">Hủy</button>
@@ -79,18 +77,16 @@
           <td>{{ formatTime(app.startTime) }} – {{ formatTime(app.endTime) }}</td>
           <td>{{ app.status }}</td>
           <td class="actions">
-            <button
-              v-if="app.status === 'Pending'"
-              @click="changeStatus(app.id, 'Confirmed')"
-            >Xác nhận</button>
-            <button
-              v-if="app.status === 'Confirmed'"
-              @click="changeStatus(app.id, 'Completed')"
-            >Hoàn thành</button>
-            <button
-              v-if="app.status !== 'Cancelled' && app.status !== 'Completed'"
-              @click="cancelAppointment(app.id)"
-            >Hủy</button>
+            <button v-if="app.status === 'Pending'" @click="changeStatus(app.id, 'Confirmed')">Xác nhận</button>
+            <button v-if="app.status === 'Confirmed'" @click="changeStatus(app.id, 'Completed')">Hoàn thành</button>
+            <button v-if="app.status !== 'Cancelled' && app.status !== 'Completed'"
+              @click="cancelAppointment(app.id)">Hủy</button>
+            <button v-if="app.status === 'Completed' && !app.hasResult" @click="openResultModal(app)">
+              Ghi kết quả tư vấn
+            </button>
+            <button v-if="app.status === 'Completed' && app.hasResult" @click="openResultModal(app, 'view')">
+              Xem kết quả
+            </button>
           </td>
         </tr>
         <tr v-if="allSlots.length === 0">
@@ -99,6 +95,42 @@
       </tbody>
     </table>
   </div>
+  <!-- Modal quản lý kết quả -->
+  <div v-if="resultModal.visible" class="modal-overlay">
+    <div class="modal-content card">
+      <h3 v-if="resultModal.mode === 'create'">Ghi kết quả tư vấn</h3>
+      <h3 v-else-if="resultModal.mode === 'edit'">Chỉnh sửa kết quả tư vấn</h3>
+      <h3 v-else>Xem kết quả tư vấn</h3>
+      <div v-if="resultModal.loading">Đang xử lý...</div>
+      <div v-else>
+        <label>
+          Chẩn đoán:
+          <input v-model="resultModal.diagnosis" :readonly="resultModal.mode === 'view'" type="text" placeholder="Chẩn đoán" />
+        </label>
+        <label>
+          Kết luận/Hướng dẫn:
+          <textarea v-model="resultModal.recommendation" :readonly="resultModal.mode === 'view'" placeholder="Kết luận, hướng dẫn..."></textarea>
+        </label>
+        <div v-if="resultModal.mode === 'create'">
+          <button @click="submitResult" :disabled="!resultModal.diagnosis || !resultModal.recommendation">
+            Lưu kết quả
+          </button>
+          <button @click="closeResultModal" style="margin-left:1rem">Hủy</button>
+        </div>
+        <div v-else-if="resultModal.mode === 'edit'">
+          <button @click="updateResult" :disabled="!resultModal.diagnosis || !resultModal.recommendation">Lưu chỉnh sửa</button>
+          <button @click="() => resultModal.mode = 'view'" style="margin-left:1rem">Hủy</button>
+        </div>
+        <div v-else>
+          <button @click="() => resultModal.mode = 'edit'">Sửa</button>
+          <button @click="deleteResult" style="margin-left:1rem">Xóa</button>
+        </div>
+        <div v-if="resultModal.error" style="color:red">{{ resultModal.error }}</div>
+        <div v-if="resultModal.success" style="color:green">{{ resultModal.success }}</div>
+      </div>
+    </div>
+  </div>
+
 </template>
 
 <script setup>
@@ -107,6 +139,37 @@ import { storeToRefs } from 'pinia'
 import { useAppointmentsStore } from '@/stores/appointments'
 import appointmentService from '@/services/appointmentService'
 import { getMyUserInfo, getConsultantByUserId } from '@/services/userService'
+
+const resultModal = ref({
+  visible: false,
+  loading: false,
+  error: '',
+  success: '',
+  appointmentId: null,
+  userId: null,
+  diagnosis: '',
+  recommendation: '',
+  mode: 'create' // 'create', 'edit', 'view'
+});
+
+// Mở modal theo mode: create, view, edit
+function openResultModal(app, mode = 'create') {
+  resultModal.value = {
+    visible: true,
+    loading: false,
+    error: '',
+    success: '',
+    appointmentId: app.id,
+    userId: app.userId,
+    resultId: app.resultId || null,
+    diagnosis: '',
+    recommendation: '',
+    mode
+  }
+  if (mode === 'view' && app.resultId) {
+    fetchResultDetail(app.resultId)
+  }
+}
 
 // store
 const store = useAppointmentsStore()
@@ -120,6 +183,7 @@ const newSlotTime = ref('')  // format "YYYY-MM-DDThh:mm"
 const allSlots = computed(() => {
   const av = availableSlots.value.map(slot => ({
     id: slot.slotId,
+    userId: null,
     userFullName: '',
     startTime: slot.start,
     endTime: slot.end,
@@ -127,10 +191,12 @@ const allSlots = computed(() => {
   }))
   const sch = consultantAppointments.value.map(a => ({
     id: a.id,
+    userId: a.userId,
     userFullName: a.userFullName,
     startTime: a.startTime,
     endTime: a.endTime,
-    status: a.status
+    status: a.status,
+    hasResult: a.hasResult
   }))
   return [...av, ...sch].sort((a, b) =>
     new Date(a.startTime) - new Date(b.startTime)
@@ -169,9 +235,9 @@ const createNewSlot = async () => {
 
     // Chuyển giờ về UTC (thêm 7 giờ cho múi giờ Việt Nam)
     const utcDate = new Date(localDate.getTime() + (7 * 60 * 60 * 1000)) // Cộng thêm 7 giờ (7 tiếng x 60 phút x 60 giây x 1000 ms)
-    
+
     // Convert to ISO string with seconds
-    const iso = utcDate.toISOString() 
+    const iso = utcDate.toISOString()
 
     console.log('Creating new slot at:', iso)
     await store.createSlot({ startTime: iso })
@@ -196,6 +262,130 @@ const revisitModal = ref({
   parentAppointments: [],
   parentAppointmentId: ''
 })
+
+function closeResultModal() {
+  resultModal.value.visible = false
+}
+
+async function submitResult() {
+  resultModal.value.loading = true
+  resultModal.value.error = ''
+  resultModal.value.success = ''
+  console.log({
+    appointmentId: resultModal.value.appointmentId,
+    userId: resultModal.value.userId,
+    diagnosis: resultModal.value.diagnosis,
+    recommendation: resultModal.value.recommendation
+  });
+  try {
+    const token = localStorage.getItem('token');
+    const res = await fetch('https://localhost:7233/api/Results', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({
+        appointmentId: resultModal.value.appointmentId,
+        userId: resultModal.value.userId,
+        diagnosis: resultModal.value.diagnosis,
+        recommendation: resultModal.value.recommendation
+      })
+    });
+    if (res.ok) {
+      resultModal.value.success = 'Lưu kết quả thành công!';
+      setTimeout(() => {
+        resultModal.value.visible = false;
+        loadSlots(); // refresh lại list
+      }, 1000);
+    } else {
+      const err = await res.json().catch(() => ({}));
+      resultModal.value.error = err.message || 'Lỗi khi lưu kết quả';
+    }
+  } catch (e) {
+    resultModal.value.error = 'Lỗi khi lưu kết quả';
+  } finally {
+    resultModal.value.loading = false;
+  }
+}
+
+// Lấy chi tiết kết quả
+async function fetchResultDetail(resultId) {
+  resultModal.value.loading = true
+  try {
+    const token = localStorage.getItem('token')
+    const res = await fetch(`https://localhost:7233/api/Results/${resultId}`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    })
+    if (!res.ok) throw new Error('Lỗi khi tải kết quả')
+    const data = await res.json()
+    resultModal.value.diagnosis = data.diagnosis
+    resultModal.value.recommendation = data.recommendation
+    resultModal.value.resultId = data.id
+    resultModal.value.userId = data.userId
+  } catch (e) {
+    resultModal.value.error = e.message
+  } finally {
+    resultModal.value.loading = false
+  }
+}
+
+// Cập nhật kết quả
+async function updateResult() {
+  resultModal.value.loading = true
+  resultModal.value.error = ''
+  try {
+    const token = localStorage.getItem('token')
+    const res = await fetch(`https://localhost:7233/api/Results/${resultModal.value.resultId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({
+        diagnosis: resultModal.value.diagnosis,
+        recommendation: resultModal.value.recommendation
+      })
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.message || 'Lỗi khi cập nhật kết quả')
+    }
+    resultModal.value.success = 'Cập nhật thành công!'
+    setTimeout(() => {
+      resultModal.value.visible = false
+      loadSlots()
+    }, 1000)
+  } catch (e) {
+    resultModal.value.error = e.message
+  } finally {
+    resultModal.value.loading = false
+  }
+}
+
+// Xóa kết quả
+async function deleteResult() {
+  if (!confirm('Bạn chắc chắn muốn xóa kết quả này?')) return
+  resultModal.value.loading = true
+  resultModal.value.error = ''
+  try {
+    const token = localStorage.getItem('token')
+    const res = await fetch(`https://localhost:7233/api/Results/${resultModal.value.resultId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    })
+    if (!res.ok) throw new Error('Lỗi khi xóa kết quả')
+    resultModal.value.success = 'Đã xóa kết quả!'
+    setTimeout(() => {
+      resultModal.value.visible = false
+      loadSlots()
+    }, 1000)
+  } catch (e) {
+    resultModal.value.error = e.message
+  } finally {
+    resultModal.value.loading = false
+  }
+}
 
 function openRevisitModal() {
   revisitModal.value.visible = true
@@ -311,9 +501,13 @@ onMounted(() => {
   padding: 1rem;
   background: #fff;
   border-radius: 8px;
-  box-shadow: 0 0 6px rgba(0,0,0,0.1);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
 }
-h2 { text-align: center; margin-bottom: 1rem; }
+
+h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+}
 
 .slot-creator {
   display: flex;
@@ -321,11 +515,13 @@ h2 { text-align: center; margin-bottom: 1rem; }
   gap: 0.5rem;
   margin-bottom: 1rem;
 }
+
 .slot-creator input {
   padding: 0.4rem;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+
 .slot-creator button {
   padding: 0.4rem 0.8rem;
   border: none;
@@ -334,28 +530,36 @@ h2 { text-align: center; margin-bottom: 1rem; }
   border-radius: 4px;
   cursor: pointer;
 }
+
 .slot-creator button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.loading, .error, .no-data {
+.loading,
+.error,
+.no-data {
   text-align: center;
   margin: 1rem 0;
   color: #888;
 }
-.error { color: #e53935; }
+
+.error {
+  color: #e53935;
+}
 
 .appointments-table {
   width: 100%;
   border-collapse: collapse;
 }
+
 .appointments-table th,
 .appointments-table td {
   padding: 0.6rem;
   border: 1px solid #ddd;
   text-align: left;
 }
+
 .actions button {
   margin-right: 0.5rem;
   padding: 0.4rem 0.8rem;
@@ -363,20 +567,39 @@ h2 { text-align: center; margin-bottom: 1rem; }
   border-radius: 4px;
   cursor: pointer;
 }
-.actions button:hover { opacity: 0.9; }
-.actions button:nth-child(1) { background: #4caf50; color: white; }
-.actions button:nth-child(2) { background: #1976d2; color: white; }
-.actions button:nth-child(3) { background: #e53935; color: white; }
+
+.actions button:hover {
+  opacity: 0.9;
+}
+
+.actions button:nth-child(1) {
+  background: #4caf50;
+  color: white;
+}
+
+.actions button:nth-child(2) {
+  background: #1976d2;
+  color: white;
+}
+
+.actions button:nth-child(3) {
+  background: #e53935;
+  color: white;
+}
 
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.35);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
 }
+
 .modal-content {
   background: #fff;
   padding: 2.2rem 2.5rem 2rem 2.5rem;
@@ -386,9 +609,10 @@ h2 { text-align: center; margin-bottom: 1rem; }
   max-height: 85vh;
   overflow-y: auto;
   position: relative;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
   font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
 }
+
 .modal-content h3 {
   margin-top: 0;
   margin-bottom: 1.5rem;
@@ -397,12 +621,14 @@ h2 { text-align: center; margin-bottom: 1rem; }
   color: #1976d2;
   text-align: center;
 }
+
 .modal-content label {
   display: block;
   margin-bottom: 1rem;
   font-weight: 500;
   color: #333;
 }
+
 .modal-content select,
 .modal-content input[type="datetime-local"],
 .modal-content input[type="text"] {
@@ -415,12 +641,14 @@ h2 { text-align: center; margin-bottom: 1rem; }
   margin-bottom: 0.5rem;
   transition: border 0.2s;
 }
+
 .modal-content select:focus,
 .modal-content input[type="datetime-local"]:focus,
 .modal-content input[type="text"]:focus {
   border: 1.5px solid #1976d2;
   outline: none;
 }
+
 .modal-content button {
   min-width: 100px;
   padding: 0.5rem 1.2rem;
@@ -434,19 +662,23 @@ h2 { text-align: center; margin-bottom: 1rem; }
   cursor: pointer;
   transition: background 0.2s;
 }
+
 .modal-content button:disabled {
   background: #b0b0b0;
   color: #fff;
   cursor: not-allowed;
 }
-.modal-content button + button {
+
+.modal-content button+button {
   background: #e0e0e0;
   color: #333;
   margin-left: 1rem;
 }
-.modal-content button + button:hover {
+
+.modal-content button+button:hover {
   background: #d0d0d0;
 }
+
 .modal-close {
   position: absolute;
   top: 12px;
@@ -458,14 +690,17 @@ h2 { text-align: center; margin-bottom: 1rem; }
   cursor: pointer;
   transition: color 0.2s;
 }
+
 .modal-close:hover {
   color: #1976d2;
 }
+
 @media (max-width: 600px) {
   .modal-content {
     padding: 1.2rem 0.7rem 1rem 0.7rem;
     min-width: 0;
   }
+
   .modal-content h3 {
     font-size: 1.1rem;
   }
