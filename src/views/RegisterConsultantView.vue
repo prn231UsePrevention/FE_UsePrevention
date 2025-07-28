@@ -1,7 +1,7 @@
 <template>
   <div class="auth-container">
     <form class="auth-form card" @submit.prevent="handleRegister">
-      <h2>Đăng ký</h2>
+      <h2>Đăng ký Tư vấn viên</h2>
       <div class="form-group">
         <label for="fullName">Họ và tên</label>
         <input v-model="fullName" type="text" id="fullName" required placeholder="Nhập họ và tên" />
@@ -31,11 +31,11 @@
           <option value="Other">Khác</option>
         </select>
       </div>
-      <button type="submit" :disabled="loading" class="btn primary">Đăng ký</button>
+      <button type="submit" :disabled="loading" class="btn primary">Đăng ký Tư vấn viên</button>
       <div class="register-options">
         <p class="register-divider">hoặc</p>
-        <router-link to="/register-consultant" class="btn btn-consultant">
-          Đăng ký Tư vấn viên
+        <router-link to="/register" class="btn btn-customer">
+          Đăng ký Người dùng
         </router-link>
       </div>
       <p class="switch-link">Đã có tài khoản? <router-link to="/login">Đăng nhập</router-link></p>
@@ -59,7 +59,7 @@ const loading = ref(false)
 const router = useRouter()
 const toast = useToast()
 
-const API_URL = 'https://localhost:7233/api/Users/register' // Đổi lại đúng endpoint BE nếu khác
+const API_URL = 'https://localhost:7233/api/Users/register-staff'
 
 async function handleRegister() {
   loading.value = true
@@ -75,9 +75,9 @@ async function handleRegister() {
       password: password.value,
       dateOfBirth: dateOfBirth.value,
       gender: gender.value,
-      roleId: 0 // Mặc định roleId là 0
+      roleId: 3 // Consultant roleId là 3
     })
-    toast.success('Đăng ký thành công! Vui lòng đăng nhập.')
+    toast.success('Đăng ký Tư vấn viên thành công! Vui lòng đăng nhập.')
     setTimeout(() => {
       router.push('/login')
     }, 1200)
@@ -148,7 +148,6 @@ button:disabled {
   cursor: not-allowed;
   box-shadow: none;
 }
-
 .switch-link {
   text-align: center;
   font-size: var(--font-size-md);
@@ -189,8 +188,8 @@ button:disabled {
   right: 0;
 }
 
-.btn-consultant {
-  background: linear-gradient(135deg, #9C27B0, #7B1FA2);
+.btn-customer {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
   color: white;
   border: none;
   border-radius: var(--border-radius-md);
@@ -205,10 +204,9 @@ button:disabled {
   text-align: center;
 }
 
-.btn-consultant:hover {
-  background: linear-gradient(135deg, #7B1FA2, #6A1B9A);
+.btn-customer:hover {
+  background: linear-gradient(135deg, #45a049, #388e3c);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 }
-</style>
- 
+</style> 
