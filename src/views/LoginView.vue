@@ -11,8 +11,6 @@
         <input v-model="password" type="password" id="password" required placeholder="Nhập mật khẩu" />
       </div>
       <button type="submit" :disabled="loading" class="btn primary">Đăng nhập</button>
-      <p class="error" v-if="error">{{ error }}</p>
-      <p class="success" v-if="success">Đăng nhập thành công!</p>
       <p class="switch-link">Chưa có tài khoản? <router-link to="/register">Đăng ký</router-link></p>
     </form>
   </div>
@@ -22,15 +20,15 @@
 import { ref } from 'vue'
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
+import { useToast } from 'vue-toastification'
 
 const email = ref('')
 const password = ref('')
-const error = ref('')
-const success = ref(false)
 const loading = ref(false)
 const authStore = useAuthStore()
+const toast = useToast()
 
-const API_URL = '/api/Users/login'
+const API_URL = 'https://localhost:7233/api/Users/login'
 
 function parseJwt(token) {
   try {
@@ -52,8 +50,6 @@ function parseJwt(token) {
 }
 
 async function handleLogin() {
-  error.value = ''
-  success.value = false
   loading.value = true
   try {
     const res = await axios.post(API_URL, { email: email.value, password: password.value })
@@ -62,24 +58,37 @@ async function handleLogin() {
     console.log(res)
 
     if (payload) {
-      const user = {
+      // Get basic user info from login response
+      const basicUser = {
         id: res.data.userId,
-        fullName: res.data.fullName,
-        email: res.data.email,
-        dateOfBirth: res.data.dateOfBirth,
-        gender: res.data.gender,
-        createdAt: res.data.createdAt,
-        isActive: res.data.isActive,
         role: payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']
       }
-      console.log(user)
-      authStore.login(user, token)
-      success.value = true
+      
+      // Get full user data from profile API
+      try {
+        const userResponse = await axios.get(`https://localhost:7233/api/Users/my-user`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        
+        const fullUser = {
+          ...basicUser,
+          ...userResponse.data
+        }
+        
+        console.log('Full user data:', fullUser)
+        authStore.login(fullUser, token)
+        toast.success('Đăng nhập thành công!')
+      } catch (profileError) {
+        console.warn('Could not fetch full user data, using basic info:', profileError)
+        // Fallback to basic user info
+        authStore.login(basicUser, token)
+        toast.success('Đăng nhập thành công!')
+      }
     } else {
       throw new Error('Could not parse token.')
     }
   } catch (err) {
-    error.value = err.response?.data?.message || 'Đăng nhập thất bại!'
+    toast.error(err.response?.data?.message || 'Đăng nhập thất bại!')
   } finally {
     loading.value = false
   }
@@ -145,18 +154,7 @@ button:disabled {
   cursor: not-allowed;
   box-shadow: none;
 }
-.error {
-  color: var(--error-color);
-  text-align: center;
-  font-size: var(--font-size-sm);
-  margin-top: var(--spacing-sm);
-}
-.success {
-  color: var(--success-color);
-  text-align: center;
-  font-size: var(--font-size-sm);
-  margin-top: var(--spacing-sm);
-}
+
 .switch-link {
   text-align: center;
   font-size: var(--font-size-md);

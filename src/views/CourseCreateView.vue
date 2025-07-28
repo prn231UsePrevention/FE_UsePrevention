@@ -15,10 +15,12 @@ const coursesStore = useCoursesStore()
 
 const handleCreate = async (courseData) => {
   try {
-    await coursesStore.createCourse(courseData)
-    router.push('/courses')
-  } catch {
-    // handle error
+    const newCourse = await coursesStore.createCourse(courseData)
+    // Redirect to the edit page of the newly created course
+    router.push(`/admin/courses/edit/${newCourse.id}`)
+  } catch (error) {
+    console.error('Error creating course:', error)
+    // You might want to show an error toast here
   }
 }
 
