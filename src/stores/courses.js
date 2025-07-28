@@ -112,7 +112,23 @@ export const useCoursesStore = defineStore('courses', {
       this.error = null
       try {
         const newCourse = await courseService.createCourse(courseData)
-        this.courses.push(newCourse)
+        
+        // Validate the response
+        if (!newCourse || !newCourse.id) {
+          throw new Error('Invalid course data received from server')
+        }
+        
+        // Add the new course to the list if it's not already there
+        const existingIndex = this.courses.findIndex(course => course.id === newCourse.id)
+        if (existingIndex === -1) {
+          this.courses.push(newCourse)
+        } else {
+          this.courses[existingIndex] = newCourse
+        }
+        
+        // Set as current course if we're in edit mode
+        this.currentCourse = newCourse
+        
         return newCourse
       } catch (error) {
         this.error = error.message || 'Có lỗi xảy ra khi tạo khóa học'

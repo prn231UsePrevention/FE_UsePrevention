@@ -78,8 +78,31 @@ export const courseService = {
   // Tạo khóa học mới
   async createCourse(courseData) {
     try {
+      console.log('Sending course data to backend:', courseData)
       const response = await apiClient.post('/Course', courseData)
-      return response.data
+      console.log('Backend response:', response.data)
+      
+      // Handle different response formats from backend
+      let courseId
+      if (typeof response.data === 'number') {
+        // Backend returns only the course ID
+        courseId = response.data
+        console.log('Received course ID:', courseId)
+      } else if (response.data && response.data.id) {
+        // Backend returns full course object
+        console.log('Received full course object:', response.data)
+        return response.data
+      } else {
+        // Unexpected response format
+        console.error('Unexpected response format:', response.data)
+        throw new Error('Unexpected response format from server')
+      }
+      
+      // Fetch the full course details if we only got the ID
+      console.log('Fetching course details for ID:', courseId)
+      const courseDetails = await this.getCourseById(courseId)
+      console.log('Fetched course details:', courseDetails)
+      return courseDetails
     } catch (error) {
       console.error('Error creating course:', error)
       throw error
@@ -225,7 +248,9 @@ export const courseService = {
       console.error('Error deleting lesson:', error)
       throw error
     }
-  }
+  },
+
+
 }
 
 export default courseService 

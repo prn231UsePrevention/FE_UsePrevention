@@ -3,6 +3,7 @@ import { useAuthStore } from '@/stores/auth'
 import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
+import RegisterConsultantView from '../views/RegisterConsultantView.vue'
 import CommunityProgramsView from '../views/CommunityProgramsView.vue'
 
 import MyParticipationView from '../views/MyParticipationView.vue'
@@ -25,6 +26,12 @@ const routes = [
     path: '/register',
     name: 'register',
     component: RegisterView,
+    meta: { guest: true } // For guests only
+  },
+  {
+    path: '/register-consultant',
+    name: 'register-consultant',
+    component: RegisterConsultantView,
     meta: { guest: true } // For guests only
   },
   {

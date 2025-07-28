@@ -191,16 +191,24 @@ const handleSubmit = async () => {
   try {
     // Map to CourseRequestDto format
     const courseData = {
-      title: formData.value.title,
-      description: formData.value.description,
+      title: formData.value.title.trim(),
+      description: formData.value.description.trim(),
       targetAudience: formData.value.targetAudience,
-      location: formData.value.location,
+      location: formData.value.location.trim(),
       startDate: formData.value.startDate,
       endDate: formData.value.endDate,
-      imageUrl: formData.value.imageUrl || null,
-      additionalInfo: formData.value.additionalInfo || null,
+      imageUrl: formData.value.imageUrl?.trim() || null,
+      additionalInfo: formData.value.additionalInfo?.trim() || null,
       isActive: formData.value.isActive,
       courseGrade: formData.value.courseGrade
+    }
+
+    // Additional validation for required fields
+    if (!courseData.title || !courseData.description || !courseData.location || 
+        !courseData.startDate || !courseData.endDate || !courseData.courseGrade ||
+        courseData.targetAudience.length === 0) {
+      console.error('Missing required fields')
+      return
     }
 
     emit('submit', courseData)
