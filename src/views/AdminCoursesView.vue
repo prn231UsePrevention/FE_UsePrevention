@@ -5,7 +5,7 @@
                 <h2>Quản Lý Khóa học</h2>
                 <p class="admin-courses-desc">Thêm, chỉnh sửa hoặc xóa các khóa học đào tạo online về ma túy.</p>
             </div>
-            <button @click="goToCreate" class="btn-add-course">Thêm khóa học</button>
+            <button @click="goToCreate" class="add-btn">Thêm khóa học</button>
         </div>
         <div class="admin-courses-table-wrapper">
             <table class="admin-courses-table">
@@ -27,8 +27,8 @@
                         <td>{{ formatDate(course.startDate) }}</td>
                         <td>{{ formatDate(course.endDate) }}</td>
                         <td>
-                            <button @click="goToEdit(course.id)" class="btn-edit-course">Sửa</button>
-                            <button @click="deleteCourse(course.id)" class="btn-delete-course">Xóa</button>
+                            <button @click="goToEdit(course.id)" class="edit-btn">Sửa</button>
+                            <button @click="deleteCourse(course.id)" class="delete-btn">Xóa</button>
                         </td>
                     </tr>
                     <tr v-if="!isLoading && courses.length === 0">
@@ -184,7 +184,7 @@ onMounted(() => {
 }
 
 .add-btn {
-    background: #2196f3;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
     color: #fff;
     border: none;
     border-radius: 8px;
@@ -192,17 +192,18 @@ onMounted(() => {
     font-weight: 600;
     font-size: 1.08rem;
     cursor: pointer;
-    box-shadow: 0 2px 12px #2196f322;
-    transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+    box-shadow: 0 2px 12px rgba(76, 175, 80, 0.3);
+    transition: all 0.3s ease;
     display: block;
     text-decoration: none;
     text-align: center;
 }
 
 .add-btn:hover {
-    background: #1769aa;
+    background: linear-gradient(135deg, #45a049, #388e3c);
     color: #fff;
-    box-shadow: 0 4px 18px #2196f344;
+    box-shadow: 0 4px 18px rgba(76, 175, 80, 0.4);
+    transform: translateY(-2px);
 }
 
 .admin-courses-table-wrapper {
@@ -239,7 +240,7 @@ onMounted(() => {
 }
 
 .edit-btn {
-    background: #888;
+    background: linear-gradient(135deg, #2196F3, #1976D2);
     color: #fff;
     border: none;
     border-radius: 6px;
@@ -247,26 +248,32 @@ onMounted(() => {
     font-weight: 600;
     margin-right: 8px;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.3);
 }
 
 .edit-btn:hover {
-    background: #1976d2;
+    background: linear-gradient(135deg, #1976D2, #1565C0);
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+    transform: translateY(-1px);
 }
 
 .delete-btn {
-    background: #e53935;
+    background: linear-gradient(135deg, #f44336, #d32f2f);
     color: #fff;
     border: none;
     border-radius: 6px;
     padding: 6px 18px;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
 }
 
 .delete-btn:hover {
-    background: #b71c1c;
+    background: linear-gradient(135deg, #d32f2f, #c62828);
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+    transform: translateY(-1px);
 }
 
 .loading-table {

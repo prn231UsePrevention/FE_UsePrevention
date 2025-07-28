@@ -173,7 +173,3 @@ textarea:focus {
   padding: 0 var(--spacing-md);
 }
 
-.Vue-Toastification__toast {
-  background: white !important;
-  color: #374151 !important;
-}

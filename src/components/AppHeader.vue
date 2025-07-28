@@ -38,7 +38,7 @@
       
       <!-- User Info & Logout - Moved outside navbar for better layout -->
       <div v-if="isLoggedIn" class="user-info">
-        <router-link to="/profile" class="user-name">{{ authStore.user?.fullName || 'Người dùng' }}</router-link>
+        <router-link to="/profile" class="user-name">{{ getUserDisplayName() }}</router-link>
         <a href="#" @click.prevent="authStore.logout" class="logout-link">Đăng xuất</a>
       </div>
     </div>
@@ -51,6 +51,15 @@ import { storeToRefs } from 'pinia'
 
 const authStore = useAuthStore()
 const { isLoggedIn, userRole } = storeToRefs(authStore)
+
+// Function to get user display name from various possible fields
+const getUserDisplayName = () => {
+  const user = authStore.user
+  if (!user) return 'Người dùng'
+  
+  // Check various possible name fields
+  return user.fullName || user.name || user.userName || user.email || 'Người dùng'
+}
 </script>
 
 <script>

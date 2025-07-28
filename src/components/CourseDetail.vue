@@ -199,9 +199,11 @@
       </section>
 
       <!-- RATINGS & REVIEWS -->
-      <section class="section" v-if="course?.ratings">
+      <section class="section">
         <div class="container">
           <h2 class="section-title">Đánh giá & Nhận xét</h2>
+          
+          <!-- Rating Summary -->
           <div class="rating-summary">
             <div class="rating-score">
               <span class="score">{{ averageRating }}</span>
@@ -222,10 +224,20 @@
               <span class="rating-count">{{ ratingsCount }} đánh giá</span>
             </div>
           </div>
-          <div class="reviews-grid">
+
+          <!-- Course Rating Component -->
+          <CourseRating 
+            :courseId="courseId" 
+            :isEnrolled="isEnrolled" 
+            :courseRatings="course?.ratings || []"
+            @rating-submitted="refreshCourseData"
+          />
+
+          <!-- Reviews Grid -->
+          <div class="reviews-grid" v-if="course?.ratings && course.ratings.length > 0">
             <div
               v-for="review in course.ratings"
-              :key="review.createdAt + review.userName"
+              :key="review.id"
               class="review-card"
             >
               <div class="review-header">
@@ -234,17 +246,17 @@
                   :alt="review.userName"
                   class="reviewer-avatar"
                 />
-                <div class="reviewer-info">
-                  <h4 class="reviewer-name">{{ review.userName }}</h4>
+                              <div class="reviewer-info">
+                <h4 class="reviewer-name">{{ getUserName(review.userId) }}</h4>
                   <div class="review-stars">
                     <span
                       v-for="i in 5"
                       :key="i"
                       class="star"
-                      :class="renderStarType(i, review.stars)"
+                      :class="renderStarType(i, review.rating)"
                     >
-                      <template v-if="renderStarType(i, review.stars) === 'full'">★</template>
-                      <template v-else-if="renderStarType(i, review.stars) === 'half'">
+                      <template v-if="renderStarType(i, review.rating) === 'full'">★</template>
+                      <template v-else-if="renderStarType(i, review.rating) === 'half'">
                         <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;"><defs><linearGradient id="half3"><stop offset="50%" stop-color="#fbbf24"/><stop offset="50%" stop-color="#ccc"/></linearGradient></defs><path d="M10 15.27L16.18 18l-1.64-7.03L19 7.24l-7.19-.61L10 0 8.19 6.63 1 7.24l5.46 3.73L4.82 18z" fill="url(#half3)"/></svg>
                       </template>
                       <template v-else>☆</template>
@@ -253,11 +265,12 @@
                 </div>
               </div>
               <p class="review-text">{{ review.comment }}</p>
-              <div class="review-date">{{ new Date(review.createdAt).toLocaleString() }}</div>
             </div>
-            <div v-if="!course.ratings.length" class="review-card">
-              <p>Chưa có đánh giá nào.</p>
-            </div>
+          </div>
+          
+          <!-- No Reviews Message -->
+          <div v-if="!course?.ratings || course.ratings.length === 0" class="no-reviews">
+            <p>Chưa có đánh giá nào cho khóa học này.</p>
           </div>
         </div>
       </section>
@@ -339,6 +352,8 @@ import { enrollCourse } from '@/services/enrollmentService'
 import { ref } from 'vue'
 import { useToast } from 'vue-toastification'
 import { courseService } from '@/services/courseService'
+import CourseRating from '@/components/CourseRating.vue'
+import axios from 'axios'
 
 const coursesStore = useCoursesStore()
 const authStore = useAuthStore()
@@ -490,11 +505,19 @@ const loadCourseData = async () => {
     await coursesStore.fetchCourses()
   }
   
-  // Kiểm tra trạng thái đăng ký của user
+  // Kiểm tra trạng thái đăng ký của user và fetch user names
   await Promise.all([
     checkEnrollmentStatus(),
-    checkUserEnrollments()
+    checkUserEnrollments(),
+    fetchUserNames()
   ])
+}
+
+const refreshCourseData = async () => {
+  // Refresh course data after rating submission
+  await coursesStore.fetchCourseById(props.courseId)
+  // Also refresh user names
+  await fetchUserNames()
 }
 
 onMounted(async () => {
@@ -595,9 +618,42 @@ const editCourse = (courseId) => {
 
 const defaultAvatar = 'https://cdn-icons-png.flaticon.com/512/9131/9131529.png';
 
+// Store for user names
+const userNames = ref({})
+
+// Function to get user name by ID
+const getUserName = (userId) => {
+  return userNames.value[userId] || `Người dùng #${userId}`
+}
+
+// Function to fetch user names for ratings
+const fetchUserNames = async () => {
+  if (!course.value?.ratings || course.value.ratings.length === 0) return
+  
+  const uniqueUserIds = [...new Set(course.value.ratings.map(r => r.userId))]
+  
+  for (const userId of uniqueUserIds) {
+    if (!userNames.value[userId]) {
+      try {
+        const token = localStorage.getItem('token')
+        const response = await axios.get(`https://localhost:7233/api/Users/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        userNames.value[userId] = response.data.fullName || response.data.name || response.data.email
+      } catch (error) {
+        console.error(`Error fetching user ${userId}:`, error)
+        userNames.value[userId] = `Người dùng #${userId}`
+      }
+    }
+  }
+}
+
 const averageRating = computed(() => {
-  if (!course.value?.ratings || course.value.ratings.length === 0) return 0;
-  const total = course.value.ratings.reduce((sum, r) => sum + r.stars, 0);
+  if (!course.value?.ratings || course.value.ratings.length === 0) {
+    return 0;
+  }
+  
+  const total = course.value.ratings.reduce((sum, r) => sum + r.rating, 0);
   return (total / course.value.ratings.length).toFixed(1);
 });
 const ratingsCount = computed(() => course.value?.ratings?.length || 0);
@@ -1359,6 +1415,15 @@ function getLessonThumbnail(lesson) {
   font-size: 0.875rem;
   color: #6b7280;
   margin-top: 0.5rem;
+}
+
+.no-reviews {
+  text-align: center;
+  padding: 3rem;
+  background: #f9fafb;
+  border-radius: 1rem;
+  color: #6b7280;
+  font-size: 1.125rem;
 }
 
 /* Related Courses */
