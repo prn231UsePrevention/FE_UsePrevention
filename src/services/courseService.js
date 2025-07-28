@@ -161,6 +161,70 @@ export const courseService = {
       console.error('Error fetching user registered courses:', error)
       throw error
     }
+  },
+
+  async addModule(courseId, moduleData) {
+    try {
+      const response = await apiClient.post(`/Course/${courseId}/module`, moduleData)
+      return response.data
+    } catch (error) {
+      console.error('Error adding module:', error)
+      throw error
+    }
+  },
+
+  async addLesson(moduleId, lessonData) {
+    try {
+      const response = await apiClient.post(`/Course/module/${moduleId}/lesson`, lessonData)
+      return response.data
+    } catch (error) {
+      console.error('Error adding lesson:', error)
+      throw error
+    }
+  },
+
+  // Cập nhật module
+  async updateModule(moduleId, moduleData) {
+    try {
+      const response = await apiClient.put(`/Course/module/${moduleId}`, moduleData)
+      return response.data
+    } catch (error) {
+      console.error('Error updating module:', error)
+      throw error
+    }
+  },
+
+  // Cập nhật lesson
+  async updateLesson(lessonId, lessonData) {
+    try {
+      const response = await apiClient.put(`/Course/lesson/${lessonId}`, lessonData)
+      return response.data
+    } catch (error) {
+      console.error('Error updating lesson:', error)
+      throw error
+    }
+  },
+
+  // Xóa module
+  async deleteModule(moduleId) {
+    try {
+      const response = await apiClient.delete(`/Course/module/${moduleId}`)
+      return response.data
+    } catch (error) {
+      console.error('Error deleting module:', error)
+      throw error
+    }
+  },
+
+  // Xóa lesson
+  async deleteLesson(lessonId) {
+    try {
+      const response = await apiClient.delete(`/Course/lesson/${lessonId}`)
+      return response.data
+    } catch (error) {
+      console.error('Error deleting lesson:', error)
+      throw error
+    }
   }
 }
 

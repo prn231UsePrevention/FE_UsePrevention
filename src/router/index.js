@@ -160,13 +160,13 @@ const routes = [
   {
     path: '/admin/courses/create',
     name: 'course-create',
-    component: () => import('../views/CourseCreateView.vue'),
+    component: () => import('../views/AdminCourseDetailView.vue'),
     meta: { requiresAuth: true, roles: ['admin'] }
   },
   {
     path: '/admin/courses/edit/:id',
     name: 'course-edit',
-    component: () => import('../views/CourseEditView.vue'),
+    component: () => import('../views/AdminCourseDetailView.vue'),
     meta: { requiresAuth: true, roles: ['admin'] }
   },
   {
