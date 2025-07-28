@@ -36,9 +36,21 @@
             <h1 class="course-title">{{ course.title || course.name }}</h1>
             <div class="course-rating">
               <div class="stars">
-                <span v-for="i in 5" :key="i" class="star">★</span>
+                <span
+                  v-for="i in 5"
+                  :key="i"
+                  class="star"
+                  :class="renderStarType(i, averageRating)"
+                >
+                  <template v-if="renderStarType(i, averageRating) === 'full'">★</template>
+                  <template v-else-if="renderStarType(i, averageRating) === 'half'">
+                    <!-- SVG nửa sao hoặc ký tự -->
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;"><defs><linearGradient id="half"><stop offset="50%" stop-color="#fbbf24"/><stop offset="50%" stop-color="#ccc"/></linearGradient></defs><path d="M10 15.27L16.18 18l-1.64-7.03L19 7.24l-7.19-.61L10 0 8.19 6.63 1 7.24l5.46 3.73L4.82 18z" fill="url(#half)"/></svg>
+                  </template>
+                  <template v-else>☆</template>
+                </span>
               </div>
-              <span class="rating-text">4.7 (1,234 đánh giá)</span>
+              <span class="rating-text">{{ averageRating }} ({{ ratingsCount }} đánh giá)</span>
             </div>
             <p class="course-description">{{ course.description }}</p>
             <div class="course-actions">
@@ -147,33 +159,39 @@
       <section class="section">
         <div class="container">
           <h2 class="section-title">Chương trình học</h2>
-          <div class="curriculum-grid">
-            <div v-for="(chapter, index) in mockCurriculum" :key="chapter.title" class="curriculum-card">
+          <div class="modules-carousel">
+            <div
+              v-for="(module, mIdx) in course.modules || []"
+              :key="module.id || mIdx"
+              class="module-card-carousel"
+            >
               <div class="curriculum-icon">📚</div>
-              <h3 class="curriculum-title">{{ chapter.title }}</h3>
-              <div class="lesson-list">
-                <div v-for="lesson in chapter.lessons" :key="lesson" class="lesson-item">
-                  <span class="lesson-icon">📖</span>
-                  <span class="lesson-text">{{ lesson }}</span>
+              <h3 class="module-title-carousel">{{ module.title }}</h3>
+              <div class="lesson-list-carousel">
+                <div
+                  v-for="(lesson, lIdx) in module.lessons || []"
+                  :key="lesson.id || lIdx"
+                  class="lesson-block-carousel"
+                >
+                  <img
+                    v-if="getLessonThumbnail(lesson)"
+                    :src="getLessonThumbnail(lesson)"
+                    class="lesson-thumb-large"
+                    :alt="lesson.title"
+                  />
+                  <div v-else class="lesson-thumb-placeholder">
+                    <span class="lesson-icon">📖</span>
+                  </div>
+                  <div class="lesson-info-block">
+                    <div class="lesson-title">{{ lesson.title }}</div>
+                    <div v-if="lesson.description" class="lesson-desc">{{ lesson.description }}</div>
+                    <button
+                      v-if="lesson.videoUrl"
+                      class="lesson-play-btn"
+                      @click.stop="openVideoModal(lesson.videoUrl)"
+                    >▶ Xem video</button>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- INSTRUCTORS -->
-      <section class="section">
-        <div class="container">
-          <h2 class="section-title">Giảng viên</h2>
-          <div class="instructors-grid">
-            <div v-for="instructor in mockInstructors" :key="instructor.name" class="instructor-card">
-              <div class="instructor-avatar">
-                <img :src="instructor.avatar" :alt="instructor.name" class="avatar-image" />
-              </div>
-              <div class="instructor-info">
-                <h3 class="instructor-name">{{ instructor.name }}</h3>
-                <p class="instructor-title">{{ instructor.title }}</p>
               </div>
             </div>
           </div>
@@ -181,28 +199,64 @@
       </section>
 
       <!-- RATINGS & REVIEWS -->
-      <section class="section">
+      <section class="section" v-if="course?.ratings">
         <div class="container">
           <h2 class="section-title">Đánh giá & Nhận xét</h2>
           <div class="rating-summary">
             <div class="rating-score">
-              <span class="score">4.7</span>
+              <span class="score">{{ averageRating }}</span>
               <div class="rating-stars">
-                <span v-for="i in 5" :key="i" class="star">★</span>
+                <span
+                  v-for="i in 5"
+                  :key="i"
+                  class="star"
+                  :class="renderStarType(i, averageRating)"
+                >
+                  <template v-if="renderStarType(i, averageRating) === 'full'">★</template>
+                  <template v-else-if="renderStarType(i, averageRating) === 'half'">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;"><defs><linearGradient id="half2"><stop offset="50%" stop-color="#fbbf24"/><stop offset="50%" stop-color="#ccc"/></linearGradient></defs><path d="M10 15.27L16.18 18l-1.64-7.03L19 7.24l-7.19-.61L10 0 8.19 6.63 1 7.24l5.46 3.73L4.82 18z" fill="url(#half2)"/></svg>
+                  </template>
+                  <template v-else>☆</template>
+                </span>
               </div>
-              <span class="rating-count">1,234 đánh giá</span>
+              <span class="rating-count">{{ ratingsCount }} đánh giá</span>
             </div>
           </div>
           <div class="reviews-grid">
-            <div v-for="review in mockReviews" :key="review.name" class="review-card">
+            <div
+              v-for="review in course.ratings"
+              :key="review.createdAt + review.userName"
+              class="review-card"
+            >
               <div class="review-header">
-                <img :src="review.avatar" :alt="review.name" class="reviewer-avatar" />
+                <img
+                  :src="review.avatar || defaultAvatar"
+                  :alt="review.userName"
+                  class="reviewer-avatar"
+                />
                 <div class="reviewer-info">
-                  <h4 class="reviewer-name">{{ review.name }}</h4>
-                  <div class="review-stars">★★★★★</div>
+                  <h4 class="reviewer-name">{{ review.userName }}</h4>
+                  <div class="review-stars">
+                    <span
+                      v-for="i in 5"
+                      :key="i"
+                      class="star"
+                      :class="renderStarType(i, review.stars)"
+                    >
+                      <template v-if="renderStarType(i, review.stars) === 'full'">★</template>
+                      <template v-else-if="renderStarType(i, review.stars) === 'half'">
+                        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;"><defs><linearGradient id="half3"><stop offset="50%" stop-color="#fbbf24"/><stop offset="50%" stop-color="#ccc"/></linearGradient></defs><path d="M10 15.27L16.18 18l-1.64-7.03L19 7.24l-7.19-.61L10 0 8.19 6.63 1 7.24l5.46 3.73L4.82 18z" fill="url(#half3)"/></svg>
+                      </template>
+                      <template v-else>☆</template>
+                    </span>
+                  </div>
                 </div>
               </div>
-              <p class="review-text">{{ review.text }}</p>
+              <p class="review-text">{{ review.comment }}</p>
+              <div class="review-date">{{ new Date(review.createdAt).toLocaleString() }}</div>
+            </div>
+            <div v-if="!course.ratings.length" class="review-card">
+              <p>Chưa có đánh giá nào.</p>
             </div>
           </div>
         </div>
@@ -211,7 +265,7 @@
       <!-- RELATED COURSES -->
       <section class="section" v-if="relatedCourses.length > 0">
         <div class="container">
-          <h2 class="section-title">Khóa học liên quan</h2>
+          <h2 class="section-title">Khóa học khác</h2>
           <div class="related-courses">
             <div
               v-for="(course, idx) in relatedCourses"
@@ -253,12 +307,26 @@
         </router-link>
       </div>
     </div>
-    <div v-if="enrollSuccess" class="alert-success">
-      Đăng ký thành công!
-    </div>
+    
     <div v-if="enrollError" class="alert-error">
       {{ enrollError }}
     </div>
+
+    <!-- Video Modal Popup -->
+    <transition name="fade">
+      <div v-if="videoModal.show" class="video-modal-overlay" @click.self="closeVideoModal">
+        <div class="video-modal-content">
+          <button class="video-modal-close" @click="closeVideoModal">×</button>
+          <iframe
+            v-if="isYoutubeUrl(videoModal.url)"
+            :src="getYoutubeEmbedUrl(videoModal.url)"
+            frameborder="0"
+            allowfullscreen
+          ></iframe>
+          <a v-else :href="videoModal.url" target="_blank" rel="noopener">Xem video</a>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -445,24 +513,7 @@ const courseFeatures = [
 ]
 
 // MOCK DATA
-const mockCurriculum = [
-  { title: 'Chương 1: Giới thiệu', lessons: ['Bài 1: Tổng quan', 'Bài 2: Mục tiêu', 'Bài 3: Lộ trình học'] },
-  { title: 'Chương 2: Kỹ năng cơ bản', lessons: ['Bài 1: Kỹ năng 1', 'Bài 2: Kỹ năng 2'] },
-  { title: 'Chương 3: Ứng dụng thực tế', lessons: ['Bài 1: Tình huống thực tế', 'Bài 2: Tổng kết'] }
-]
 
-const mockInstructors = [
-  { name: 'Nguyễn Văn A', title: 'Chuyên gia Tâm lý', avatar: 'https://randomuser.me/api/portraits/men/32.jpg' },
-  { name: 'Trần Thị B', title: 'Giảng viên Đại học', avatar: 'https://randomuser.me/api/portraits/women/44.jpg' },
-  { name: 'Lê Văn C', title: 'Chuyên gia Giáo dục', avatar: 'https://randomuser.me/api/portraits/men/45.jpg' },
-  { name: 'Phạm Thị D', title: 'Chuyên gia Xã hội', avatar: 'https://randomuser.me/api/portraits/women/46.jpg' }
-]
-
-const mockReviews = [
-  { name: 'Nguyễn Minh', avatar: 'https://randomuser.me/api/portraits/men/12.jpg', text: 'Khóa học rất bổ ích, giảng viên nhiệt tình.' },
-  { name: 'Lê Hồng', avatar: 'https://randomuser.me/api/portraits/women/22.jpg', text: 'Nội dung dễ hiểu, thực tế, áp dụng được ngay.' },
-  { name: 'Trần Quốc', avatar: 'https://randomuser.me/api/portraits/men/23.jpg', text: 'Rất hài lòng với chất lượng khóa học.' }
-]
 
 // Computed property để lấy khóa học liên quan ngẫu nhiên
 const relatedCourses = computed(() => {
@@ -540,6 +591,40 @@ const viewCourse = (courseId) => {
 
 const editCourse = (courseId) => {
   router.push(`/admin/courses/edit/${courseId}`)
+}
+
+const defaultAvatar = 'https://cdn-icons-png.flaticon.com/512/9131/9131529.png';
+
+const averageRating = computed(() => {
+  if (!course.value?.ratings || course.value.ratings.length === 0) return 0;
+  const total = course.value.ratings.reduce((sum, r) => sum + r.stars, 0);
+  return (total / course.value.ratings.length).toFixed(1);
+});
+const ratingsCount = computed(() => course.value?.ratings?.length || 0);
+
+function renderStarType(index, rating) {
+  if (index <= Math.floor(rating)) return 'full';
+  if (index - rating < 1 && index > rating) return 'half';
+  return 'empty';
+}
+
+const videoModal = ref({ show: false, url: '' })
+function openVideoModal(url) {
+  videoModal.value = { show: true, url }
+}
+function closeVideoModal() {
+  videoModal.value = { show: false, url: '' }
+}
+
+function getLessonThumbnail(lesson) {
+  if (lesson.thumbnailUrl) return lesson.thumbnailUrl;
+  if (isYoutubeUrl(lesson.videoUrl)) {
+    const match = lesson.videoUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/#\s]{11})/);
+    if (match && match[1]) {
+      return `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg`;
+    }
+  }
+  return null;
 }
 </script>
 
@@ -1180,50 +1265,10 @@ const editCourse = (courseId) => {
   flex: 1;
 }
 
-/* Instructors */
-.instructors-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
-}
-
-.instructor-card {
-  background: white;
-  border-radius: 1rem;
-  padding: 2rem;
-  text-align: center;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  border: 1px solid #e5e7eb;
-}
-
-.instructor-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-}
-
-.instructor-avatar {
-  margin-bottom: 1rem;
-}
-
-.avatar-image {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 4px solid #e5e7eb;
-}
-
-.instructor-name {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-}
-
-.instructor-title {
-  color: #6b7280;
+.lesson-desc {
   font-size: 0.875rem;
+  color: #6b7280;
+  margin-left: 0.5rem;
 }
 
 /* Reviews */
@@ -1308,6 +1353,12 @@ const editCourse = (courseId) => {
 .review-text {
   color: #374151;
   line-height: 1.6;
+}
+
+.review-date {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
 }
 
 /* Related Courses */
@@ -1545,5 +1596,261 @@ const editCourse = (courseId) => {
   padding: 1rem;
   border-radius: 0.5rem;
   margin-top: 1rem;
+}
+
+.star.full {
+  color: #fbbf24;
+}
+.star.half {
+  color: #fbbf24;
+}
+.star.empty {
+  color: #ccc;
+}
+.lesson-video {
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 16/9;
+  margin-top: 0.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.lesson-video-link {
+  margin-top: 0.5rem;
+}
+
+.curriculum-section {
+  max-width: 800px;
+  margin: 0 auto;
+}
+.module-accordion {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.module-header {
+  padding: 1rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f3f4f6;
+  transition: background 0.2s;
+}
+.module-header:hover {
+  background: #f3f4f6;
+}
+.module-title {
+  flex: 1;
+  margin-left: 0.5rem;
+}
+.module-toggle {
+  font-size: 1.2rem;
+  color: #888;
+  margin-left: 1rem;
+}
+.module-lessons {
+  padding: 0.5rem 1.5rem 1rem 2.5rem;
+}
+.lesson-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  position: relative;
+}
+.lesson-title {
+  font-weight: 500;
+}
+.lesson-desc {
+  color: #6b7280;
+  font-size: 0.95em;
+}
+.lesson-play-btn {
+  margin-left: 1rem;
+  background: #fbbf24;
+  color: #1f2937;
+  border: none;
+  border-radius: 4px;
+  padding: 0.2rem 0.7rem;
+  cursor: pointer;
+  font-size: 0.95em;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.lesson-play-btn:hover {
+  background: #f59e0b;
+}
+.lesson-video-popup {
+  margin: 0.5rem 0 1rem 2rem;
+}
+.lesson-video-popup iframe {
+  width: 100%;
+  max-width: 700px;
+  min-width: 320px;
+  aspect-ratio: 16/9;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  display: block;
+  margin: 0 auto;
+}
+
+@media (max-width: 800px) {
+  .lesson-video-popup iframe {
+    max-width: 100vw;
+    min-width: 0;
+  }
+}
+.lesson-video-link {
+  margin: 0.5rem 0 1rem 2rem;
+}
+.fade-enter-active, .fade-leave-active {
+  transition: all 0.3s;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+  max-height: 0;
+}
+.video-modal-overlay {
+  position: fixed;
+  z-index: 9999;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.video-modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+.video-modal-content iframe {
+  width: 80vw;
+  max-width: 1100px;
+  height: 45vw;
+  max-height: 62vh;
+  border-radius: 8px;
+  background: #000;
+}
+.video-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 18px;
+  font-size: 2rem;
+  background: none;
+  border: none;
+  color: #333;
+  cursor: pointer;
+  z-index: 2;
+}
+@media (max-width: 800px) {
+  .video-modal-content iframe {
+    width: 98vw;
+    height: 56vw;
+  }
+}
+.modules-carousel {
+  display: flex;
+  overflow-x: auto;
+  gap: 2rem;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+.module-card-carousel {
+  min-width: 340px;
+  max-width: 380px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  padding: 1.5rem 1.2rem 1.2rem 1.2rem;
+  scroll-snap-align: start;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.module-title-carousel {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0.5rem 0 1rem 0;
+}
+.lesson-list-carousel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  width: 100%;
+}
+.lesson-block-carousel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: #f8fafc;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  padding: 0.7rem 0.7rem 0.9rem 0.7rem;
+  margin-bottom: 0.5rem;
+}
+.lesson-thumb-large {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 0.7rem;
+  background: #e5e7eb;
+}
+.lesson-thumb-placeholder {
+  width: 100%;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5e7eb;
+  border-radius: 8px;
+  margin-bottom: 0.7rem;
+}
+.lesson-info-block {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.lesson-title {
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-bottom: 0.1rem;
+}
+.lesson-desc {
+  color: #6b7280;
+  font-size: 0.97em;
+  margin-bottom: 0.2rem;
+}
+.lesson-play-btn {
+  align-self: flex-end;
+  margin-top: 0.2rem;
+}
+@media (max-width: 600px) {
+  .module-card-carousel { min-width: 90vw; max-width: 95vw; }
+}
+.lesson-thumb {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 0.7rem;
+  background: #f3f4f6;
+  flex-shrink: 0;
 }
 </style>

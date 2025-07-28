@@ -1,26 +1,43 @@
 :root {
   /* Colors */
-  --primary-color: #2196f3; /* Material Blue 500 */
-  --primary-light: #64b5f6; /* Material Blue 300 */
-  --primary-dark: #1976d2; /* Material Blue 700 */
-  --accent-color: #ffc107; /* Material Amber 500 */
-  --text-color-primary: #212121; /* Dark Grey */
-  --text-color-secondary: #757575; /* Medium Grey */
-  --background-color: #f5f5f5; /* Light Grey */
-  --surface-color: #ffffff; /* White */
-  --error-color: #f44336; /* Material Red 500 */
-  --success-color: #4caf50; /* Material Green 500 */
+  --primary-color: #2196f3;
+  /* Material Blue 500 */
+  --primary-light: #64b5f6;
+  /* Material Blue 300 */
+  --primary-dark: #1976d2;
+  /* Material Blue 700 */
+  --accent-color: #ffc107;
+  /* Material Amber 500 */
+  --text-color-primary: #212121;
+  /* Dark Grey */
+  --text-color-secondary: #757575;
+  /* Medium Grey */
+  --background-color: #f5f5f5;
+  /* Light Grey */
+  --surface-color: #ffffff;
+  /* White */
+  --error-color: #f44336;
+  /* Material Red 500 */
+  --success-color: #4caf50;
+  /* Material Green 500 */
 
   /* Typography */
   --font-family-sans: 'Roboto', sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, 'Helvetica Neue';
   --font-size-base: 16px;
-  --font-size-sm: 0.875rem; /* 14px */
-  --font-size-md: 1rem; /* 16px */
-  --font-size-lg: 1.25rem; /* 20px */
-  --font-size-xl: 1.5rem; /* 24px */
-  --font-size-h1: 2.5rem; /* 40px */
-  --font-size-h2: 2rem; /* 32px */
-  --font-size-h3: 1.75rem; /* 28px */
+  --font-size-sm: 0.875rem;
+  /* 14px */
+  --font-size-md: 1rem;
+  /* 16px */
+  --font-size-lg: 1.25rem;
+  /* 20px */
+  --font-size-xl: 1.5rem;
+  /* 24px */
+  --font-size-h1: 2.5rem;
+  /* 40px */
+  --font-size-h2: 2rem;
+  /* 32px */
+  --font-size-h3: 1.75rem;
+  /* 28px */
 
   /* Spacing */
   --spacing-xs: 4px;
@@ -35,37 +52,55 @@
   --border-radius-lg: 12px;
 
   /* Box Shadow (Material Design inspired) */
-  --shadow-1: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
-  --shadow-2: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
-  --shadow-3: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
-  --shadow-4: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow-2: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  --shadow-3: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+  --shadow-4: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
 }
 
-html, body, #app {
+html,
+body,
+#app {
   margin: 0;
   padding: 0;
   width: 100%;
-  min-height: 100vh; /* Use min-height for full viewport height */
+  min-height: 100vh;
+  /* Use min-height for full viewport height */
   background-color: var(--background-color);
   font-family: var(--font-family-sans);
   box-sizing: border-box;
   color: var(--text-color-primary);
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: inherit;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-family-sans);
   color: var(--text-color-primary);
   margin-top: 0;
   margin-bottom: var(--spacing-md);
 }
 
-h1 { font-size: var(--font-size-h1); }
-h2 { font-size: var(--font-size-h2); }
-h3 { font-size: var(--font-size-h3); }
+h1 {
+  font-size: var(--font-size-h1);
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+}
+
+h3 {
+  font-size: var(--font-size-h3);
+}
 
 p {
   margin-top: 0;
@@ -136,4 +171,9 @@ textarea:focus {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 var(--spacing-md);
+}
+
+.Vue-Toastification__toast {
+  background: white !important;
+  color: #374151 !important;
 }

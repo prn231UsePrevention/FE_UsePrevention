@@ -5,7 +5,7 @@
                 <h2>Quản Lý Khóa học</h2>
                 <p class="admin-courses-desc">Thêm, chỉnh sửa hoặc xóa các khóa học đào tạo online về ma túy.</p>
             </div>
-            <button class="add-btn" @click="openCreateModal">Thêm Khóa học Mới</button>
+            <button @click="goToCreate" class="btn-add-course">Thêm khóa học</button>
         </div>
         <div class="admin-courses-table-wrapper">
             <table class="admin-courses-table">
@@ -27,8 +27,8 @@
                         <td>{{ formatDate(course.startDate) }}</td>
                         <td>{{ formatDate(course.endDate) }}</td>
                         <td>
-                            <button class="edit-btn" @click="openEditModal(course)">Sửa</button>
-                            <button class="delete-btn" @click="deleteCourse(course.id)">Xóa</button>
+                            <button @click="goToEdit(course.id)" class="btn-edit-course">Sửa</button>
+                            <button @click="deleteCourse(course.id)" class="btn-delete-course">Xóa</button>
                         </td>
                     </tr>
                     <tr v-if="!isLoading && courses.length === 0">
@@ -57,6 +57,32 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCoursesStore } from '@/stores/courses'
 import CourseForm from '@/components/CourseForm.vue'
+import { useToast } from 'vue-toastification'
+import ConfirmToast from '@/components/ConfirmToast.vue'
+const toast = useToast()
+
+function showConfirmToast(message, onConfirm) {
+  let toastId = null
+  toastId = toast(
+    {
+      component: ConfirmToast,
+      props: {
+        message,
+        onConfirm,
+        toastId
+      },
+      listeners: {
+        close: () => toast.dismiss(toastId)
+      }
+    },
+    {
+      timeout: false,
+      closeOnClick: false,
+      hideProgressBar: true,
+      position: 'top-center'
+    }
+  )
+}
 
 const router = useRouter()
 const coursesStore = useCoursesStore()
@@ -76,43 +102,44 @@ const formatDate = (dateString) => {
     return d.toLocaleDateString('vi-VN')
 }
 
-const openCreateModal = () => {
-    isEditing.value = false
-    editingCourse.value = null
-    showModal.value = true
+function goToCreate() {
+  router.push('/admin/courses/create')
 }
 
-const openEditModal = (course) => {
-    isEditing.value = true
-    editingCourse.value = { ...course }
-    showModal.value = true
+function goToEdit(id) {
+  router.push(`/admin/courses/edit/${id}`)
 }
 
-const deleteCourse = async (id) => {
-    if (confirm('Bạn có chắc chắn muốn xóa khóa học này?')) {
-        try {
-            await coursesStore.deleteCourse(id)
-        } catch (e) {
-            // handle error
-        }
+const deleteCourse = (courseId) => {
+  showConfirmToast('Bạn có chắc muốn xóa khóa học này?', async () => {
+    try {
+      await coursesStore.deleteCourse(courseId)
+      toast.success('Xóa khóa học thành công!')
+      // Cập nhật lại danh sách
+      await coursesStore.fetchCourses()
+    } catch (error) {
+      toast.error('Có lỗi xảy ra khi xóa khóa học: ' + (error.response?.data?.message || error.message))
     }
+  })
 }
 
 const handleCreate = async (courseData) => {
     try {
-        await coursesStore.createCourse(courseData)
-        showModal.value = false
+        const newCourse = await coursesStore.createCourse(courseData)
+        toast.success('Tạo khóa học thành công!')
+        router.push(`/admin/courses/edit/${newCourse.id}`)
     } catch (e) {
-        // handle error
+        toast.error('Có lỗi xảy ra khi tạo khóa học: ' + (e.response?.data?.message || e.message))
     }
 }
 
 const handleUpdate = async (courseData) => {
     try {
         await coursesStore.updateCourse(editingCourse.value.id, courseData)
+        toast.success('Cập nhật khóa học thành công!')
         showModal.value = false
     } catch (e) {
-        // handle error
+        toast.error('Có lỗi xảy ra khi cập nhật khóa học: ' + (e.response?.data?.message || e.message))
     }
 }
 

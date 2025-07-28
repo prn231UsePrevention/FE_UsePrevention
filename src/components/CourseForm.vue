@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="handleSubmit" class="course-form-modal">
+  <form @submit.prevent="handleSubmit" class="course-form">
     <!-- Tên khóa học -->
     <div class="form-group">
       <label for="title">Tên khóa học <span class="required">*</span></label>
@@ -67,6 +67,7 @@
         Khóa học đang hoạt động
       </label>
     </div>
+
     <!-- Nút -->
     <div class="form-actions">
       <button type="button" @click="$emit('cancel')">Hủy</button>
@@ -119,7 +120,7 @@ const formData = ref({
   imageUrl: '',
   additionalInfo: '',
   isActive: true,
-  courseGrade: ''
+  courseGrade: '',
 })
 
 // Validation errors
@@ -212,15 +213,40 @@ const handleImageError = (event) => {
   event.target.src = 'https://via.placeholder.com/300x200?text=Khóa+học'
 }
 
+// Helper function để format date cho input
+function formatDateForInput(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+}
+
+// Helper function để parse targetAudience từ string/array thành array chuẩn
+function parseTargetAudience(targetAudience) {
+  if (!targetAudience) return [];
+  if (Array.isArray(targetAudience)) {
+    // Nếu là mảng nhưng phần tử là chuỗi có dấu phẩy, tách tiếp
+    return targetAudience.flatMap(item =>
+      typeof item === 'string'
+        ? item.split(',').map(i => i.trim()).filter(i => i)
+        : []
+    );
+  }
+  // Nếu là string, split theo dấu phẩy và trim
+  return targetAudience.split(',').map(item => item.trim()).filter(item => item);
+}
+
 const initializeForm = () => {
   if (props.course) {
+    // Parse targetAudience từ string thành array
+    const targetAudienceArray = parseTargetAudience(props.course.targetAudience);
+
     formData.value = {
       title: props.course.title || props.course.name || '',
       description: props.course.description || '',
       location: props.course.location || '',
-      startDate: props.course.startDate || '',
-      endDate: props.course.endDate || '',
-      targetAudience: [...(props.course.targetAudience || [])],
+      startDate: formatDateForInput(props.course.startDate),
+      endDate: formatDateForInput(props.course.endDate),
+      targetAudience: targetAudienceArray,
       imageUrl: props.course.imageUrl || '',
       additionalInfo: props.course.additionalInfo || '',
       isActive: props.course.isActive !== undefined ? props.course.isActive : true,
@@ -254,22 +280,20 @@ watch(() => props.course, () => {
 </script>
 
 <style scoped>
-.course-form-modal {
+.course-form {
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
-  width: 90vw;
-  max-width: 600px;
-  margin: 8px auto;
-  background: #fff;
+  width: 100%;
+  background: transparent;
   border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-  padding: 24px;
+  padding: 0;
   box-sizing: border-box;
   position: relative;
-  z-index: 1001;
-  overflow-y: auto;
-  max-height: 90vh;
+  z-index: 1;
+  overflow: visible !important;
+  height: auto !important;
+  max-height: none !important;
 }
 
 .form-group {
@@ -296,6 +320,7 @@ label {
 input[type="text"],
 input[type="date"],
 input[type="url"],
+input[type="number"],
 textarea,
 select {
   width: 100%;
@@ -343,6 +368,191 @@ select:focus {
 .checkbox-label input[type="checkbox"] {
   width: auto;
   margin: 0;
+}
+
+/* Modules Section */
+.modules-section {
+  border-top: 2px solid #e3eaf3;
+  padding-top: 1.5rem;
+  margin-top: 1rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.section-header h3 {
+  color: #1976d2;
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.btn-add {
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: background 0.2s;
+}
+
+.btn-add:hover {
+  background: #388e3c;
+}
+
+.btn-add-small {
+  background: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.3rem 0.8rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  transition: background 0.2s;
+}
+
+.btn-add-small:hover {
+  background: #1769aa;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  background: #f5f5f5;
+  border-radius: 8px;
+  color: #666;
+}
+
+.modules-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.module-card {
+  background: #f8f9fa;
+  border: 1px solid #e3eaf3;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.module-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.module-header h4 {
+  color: #1976d2;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.btn-remove {
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-remove:hover {
+  background: #d32f2f;
+}
+
+.btn-remove-small {
+  background: #ff5722;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-remove-small:hover {
+  background: #e64a19;
+}
+
+/* Lessons Section */
+.lessons-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e3eaf3;
+}
+
+.lessons-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.lessons-header h5 {
+  color: #333;
+  margin: 0;
+  font-size: 1rem;
+}
+
+.empty-lessons {
+  text-align: center;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 6px;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.lessons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.lesson-card {
+  background: white;
+  border: 1px solid #e3eaf3;
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.lesson-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.lesson-header h6 {
+  color: #333;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.lesson-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.btn-icon {
+  font-size: 0.9rem;
 }
 
 .form-actions {
@@ -397,9 +607,17 @@ button[type="button"]:hover {
     gap: 0.5rem;
   }
 
-  .modal-content {
-    padding: 1.2rem 0.5rem 1.2rem 0.5rem;
-    min-width: 0;
+
+
+  .section-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+
+  .btn-add {
+    width: 100%;
+    justify-content: center;
   }
 }
 </style>
