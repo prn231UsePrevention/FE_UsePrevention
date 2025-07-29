@@ -1,4 +1,5 @@
 <template>
+  <!-- Re-parsing trigger -->
   <div class="assessment-result-container">
     <h1>Kết quả khảo sát của bạn</h1>
     <div v-if="result">
@@ -23,13 +24,18 @@
         <!-- Suggested Courses -->
         <div v-if="suggestedCourses.length > 0" class="mt-6">
     <h3 class="text-xl font-semibold">Các khóa học được đề xuất</h3>
-    <ul class="list-disc list-inside mt-2">
-        <li v-for="course in recommendedCourses" :key="course.id">
-            <router-link :to="{ name: 'CourseDetail', params: { id: course.id } }" class="text-blue-600 hover:underline">
-                {{ course.title }}
-            </router-link>
-        </li>
-    </ul>
+    <div class="suggested-courses-grid">
+        <div v-for="course in suggestedCourses" :key="course.id" class="course-card">
+            <img v-if="course.imageUrl" :src="course.imageUrl" alt="Course Image" class="course-card-image">
+            <div class="course-card-content">
+                <h4 class="course-card-title">{{ course.title }}</h4>
+                <p class="course-card-description">{{ course.description }}</p>
+                <router-link :to="{ name: 'course-detail', params: { id: course.id } }" class="course-card-link">
+                    Xem chi tiết
+                </router-link>
+            </div>
+        </div>
+    </div>
 </div>
         <div v-else class="suggestion-card">
           <h3>Không có khóa học nào được đề xuất</h3>
@@ -99,7 +105,7 @@ export default {
       return 'D';
     },
     suggestedCourses() {
-      return this.allCourses.filter(course => course.courseGrade === this.courseGrade);
+      return this.allCourses.filter(course => course.courseGrade && course.courseGrade === this.courseGrade);
     },
     suggestedCommunityPrograms() {
       // Suggest programs for those with lower scores
@@ -164,14 +170,18 @@ export default {
     },
     async fetchAllData() {
       try {
-        const token = localStorage.getItem('token');
         // Fetch courses and programs in parallel
         const [coursesResponse, programsResponse] = await Promise.all([
-          courseService.getAllCourses(token),
-          getAllCommunityPrograms(token)
+          courseService.getAllCourses(),
+          getAllCommunityPrograms()
         ]);
-        this.allCourses = coursesResponse.data;
-        this.allCommunityPrograms = programsResponse.data;
+        console.log('Type of coursesResponse before assignment:', typeof coursesResponse, 'Is Array:', Array.isArray(coursesResponse));
+        this.allCourses = coursesResponse || [];
+        this.allCommunityPrograms = programsResponse || [];
+        console.log('Courses and community programs fetched successfully');
+        console.log('Courses (raw response):', coursesResponse);
+        console.log('this.allCourses after assignment:', this.allCourses);
+        console.log('Type of this.allCourses after assignment:', typeof this.allCourses, 'Is Array:', Array.isArray(this.allCourses));
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -456,4 +466,77 @@ h1 {
   background-color: #5a6268;
   transform: translateY(-2px);
 }
+.suggested-courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px; /* Tăng khoảng cách giữa các card */
+  margin-top: 30px; /* Tăng khoảng cách trên */
+}
+
+.course-card {
+  background-color: #fff;
+  border-radius: 12px; /* Bo tròn góc nhiều hơn */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12); /* Đổ bóng mạnh hơn */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Thêm transition cho box-shadow */
+  border: 1px solid #e0e0e0; /* Thêm đường viền nhẹ */
+}
+
+.course-card:hover {
+  transform: translateY(-8px); /* Nâng card lên cao hơn khi hover */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18); /* Đổ bóng mạnh hơn khi hover */
+}
+
+.course-card-image {
+  width: 100%;
+  height: 190px; /* Chiều cao hình ảnh lớn hơn */
+  object-fit: cover;
+  border-bottom: 1px solid #f0f0f0; /* Đường viền dưới hình ảnh */
+}
+
+.course-card-content {
+  padding: 20px; /* Tăng padding */
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.course-card-title {
+  font-size: 1.4em; /* Tiêu đề lớn hơn */
+  font-weight: 600; /* Chữ đậm hơn */
+  color: #2c3e50; /* Màu chữ tối hơn */
+  margin-top: 0;
+  margin-bottom: 12px;
+  min-height: 60px; /* Đảm bảo chiều cao nhất quán cho tiêu đề */
+  line-height: 1.3; /* Khoảng cách dòng */
+}
+
+.course-card-description {
+  font-size: 0.95em; /* Mô tả lớn hơn một chút */
+  color: #7f8c8d; /* Màu chữ xám hơn */
+  line-height: 1.6;
+  flex-grow: 1;
+  margin-bottom: 20px; /* Tăng khoảng cách dưới */
+}
+
+.course-card-link {
+  display: inline-block;
+  background-color: #3498db; /* Màu xanh dương đẹp hơn */
+  color: white;
+  padding: 10px 20px; /* Tăng padding */
+  border-radius: 6px; /* Bo tròn góc nhiều hơn */
+  text-decoration: none;
+  font-size: 1em; /* Kích thước chữ lớn hơn */
+  font-weight: 500; /* Chữ đậm vừa */
+  align-self: flex-start;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.course-card-link:hover {
+  background-color: #2980b9; /* Màu xanh đậm hơn khi hover */
+  transform: translateY(-2px); /* Nâng nhẹ nút khi hover */
+}
+
 </style>

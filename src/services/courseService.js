@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE_URL = 'https://localhost:7233/api' // Thay đổi URL API thực tế
+const API_BASE_URL = '/api' // Thay đổi URL API thực tế
 
 // Tạo instance axios với cấu hình mặc định
 const apiClient = axios.create({
@@ -34,7 +34,7 @@ apiClient.interceptors.response.use(
     if (error.response) {
       // Server trả về response với status code lỗi
       console.error('API Error:', error.response.status, error.response.data)
-      
+
       // Xử lý lỗi 401 (Unauthorized)
       if (error.response.status === 401) {
         localStorage.removeItem('token')
@@ -228,4 +228,4 @@ export const courseService = {
   }
 }
 
-export default courseService 
+export default courseService
