@@ -34,65 +34,67 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import assessmentService from '@/services/assessmentService';
+import { useToast } from 'vue-toastification';
 
-export default {
-  name: 'AdminAssessmentsView',
-  data() {
-    return {
-      newAssessment: {
-        title: '',
-        description: '',
-      },
-      assessments: [],
-    };
-  },
-  async created() {
-    this.fetchAssessments();
-  },
-  methods: {
-    async fetchAssessments() {
-      try {
-        const response = await assessmentService.getAllAssessments();
-        this.assessments = response.data;
-      } catch (error) {
-        console.error('Error fetching assessments:', error);
-      }
-    },
-    async createAssessment() {
-      try {
-        const response = await assessmentService.createAssessment(this.newAssessment);
-        alert('Assessment created successfully!');
-        this.newAssessment.name = '';
-        this.newAssessment.description = '';
-        // Redirect to the edit assessment page for the newly created assessment
-        this.$router.push({ name: 'admin-edit-assessment', params: { id: response.data.id } });
-      } catch (error) {
-        console.error('Error creating assessment:', error);
-        alert('Failed to create assessment.');
-      }
-    },
-    editAssessment(id) {
-      this.$router.push({ name: 'admin-edit-assessment', params: { id: id } });
-    },
-    manageQuestions(id) {
-      this.$router.push({ name: 'admin-assessment-questions', params: { assessmentId: id } });
-    },
-    async deleteAssessment(id) {
-      if (confirm('Are you sure you want to delete this assessment?')) {
-        try {
-          await assessmentService.deleteAssessment(id);
-          alert('Assessment deleted successfully!');
-          this.fetchAssessments(); // Refresh the list
-        } catch (error) {
-          console.error('Error deleting assessment:', error);
-          alert('Failed to delete assessment.');
-        }
-      }
-    },
-  },
-};
+const newAssessment = ref({
+  name: '',
+  description: '',
+});
+const assessments = ref([]);
+const router = useRouter();
+const toast = useToast();
+
+onMounted(() => {
+  fetchAssessments();
+});
+
+async function fetchAssessments() {
+  try {
+    const response = await assessmentService.getAllAssessments();
+    assessments.value = response.data;
+  } catch (error) {
+    console.error('Error fetching assessments:', error);
+    toast.error('Failed to fetch assessments.');
+  }
+}
+
+async function createAssessment() {
+  try {
+    const response = await assessmentService.createAssessment(newAssessment.value);
+    toast.success('Assessment created successfully!');
+    newAssessment.value.name = '';
+    newAssessment.value.description = '';
+    router.push({ name: 'admin-edit-assessment', params: { id: response.data.id } });
+  } catch (error) {
+    console.error('Error creating assessment:', error);
+    toast.error('Failed to create assessment.');
+  }
+}
+
+function editAssessment(id) {
+  router.push({ name: 'admin-edit-assessment', params: { id: id } });
+}
+
+function manageQuestions(id) {
+  router.push({ name: 'admin-assessment-questions', params: { assessmentId: id } });
+}
+
+async function deleteAssessment(id) {
+  if (confirm('Are you sure you want to delete this assessment?')) {
+    try {
+      await assessmentService.deleteAssessment(id);
+      toast.success('Assessment deleted successfully!');
+      fetchAssessments();
+    } catch (error) {
+      console.error('Error deleting assessment:', error);
+      toast.error('Failed to delete assessment.');
+    }
+  }
+}
 </script>
 
 <style scoped>

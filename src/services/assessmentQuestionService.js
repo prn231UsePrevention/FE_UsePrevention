@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
 
-const API_URL = 'http://localhost:5153/api/assessmentquestion';
+const API_URL = '/api/assessmentquestion';
 
 const apiClient = axios.create({
   baseURL: API_URL,

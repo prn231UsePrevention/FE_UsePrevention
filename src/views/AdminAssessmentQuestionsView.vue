@@ -48,95 +48,99 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import assessmentQuestionService from '@/services/assessmentQuestionService';
 import assessmentService from '@/services/assessmentService';
+import { useToast } from 'vue-toastification';
 
-export default {
-  name: 'AdminAssessmentQuestionsView',
-  data() {
-    return {
-      assessmentId: null,
-      assessmentName: '',
-      newQuestion: {
-        assessmentId: null,
-        content: '',
-        type: 'MultipleChoice',
-        options: '',
-        correctAnswer: '',
-      },
-      newQuestionOptionsInput: '',
-      questions: [],
+const route = useRoute();
+const toast = useToast();
+
+const assessmentId = ref(null);
+const assessmentName = ref('');
+const newQuestion = ref({
+  assessmentId: null,
+  content: '',
+  type: 'MultipleChoice',
+  options: '',
+  correctAnswer: '',
+});
+const newQuestionOptionsInput = ref('');
+const questions = ref([]);
+
+onMounted(async () => {
+  assessmentId.value = route.params.assessmentId;
+  newQuestion.value.assessmentId = assessmentId.value;
+  await fetchAssessmentDetails();
+  await fetchQuestions();
+});
+
+watch(newQuestionOptionsInput, (newValue) => {
+  newQuestion.value.options = newValue; // options is now a string
+});
+
+async function fetchAssessmentDetails() {
+  try {
+    const response = await assessmentService.getAssessmentById(assessmentId.value);
+    assessmentName.value = response.data.name; // Assuming the assessment object has a 'name' property
+  } catch (error) {
+    console.error('Error fetching assessment details:', error);
+    assessmentName.value = 'Unknown Assessment';
+    toast.error('Failed to fetch assessment details.');
+  }
+}
+
+async function fetchQuestions() {
+  try {
+    const response = await assessmentQuestionService.getQuestionsByAssessmentId(assessmentId.value);
+    questions.value = response.data;
+  } catch (error) {
+    console.error('Error fetching questions:', error);
+    toast.error('Failed to fetch questions.');
+  }
+}
+
+async function addQuestion() {
+  try {
+    const questionPayload = {
+      assessmentId: newQuestion.value.assessmentId,
+      content: newQuestion.value.content,
+      type: newQuestion.value.type,
+      options: newQuestion.value.type === 'MultipleChoice' ? newQuestion.value.options : null,
+      correctAnswer: newQuestion.value.correctAnswer || null,
     };
-  },
-  async created() {
-    this.assessmentId = this.$route.params.assessmentId;
-    this.newQuestion.assessmentId = this.assessmentId;
-    await this.fetchAssessmentDetails();
-    await this.fetchQuestions();
-  },
-  watch: {
-    newQuestionOptionsInput(newValue) {
-      this.newQuestion.options = newValue; // options is now a string
-    },
-  },
-  methods: {
-    async fetchAssessmentDetails() {
-      try {
-        const response = await assessmentService.getAssessmentById(this.assessmentId);
-        this.assessmentName = response.data.name; // Assuming the assessment object has a 'name' property
-      } catch (error) {
-        console.error('Error fetching assessment details:', error);
-        this.assessmentName = 'Unknown Assessment';
-      }
-    },
-    async fetchQuestions() {
-      try {
-        const response = await assessmentQuestionService.getQuestionsByAssessmentId(this.assessmentId);
-        this.questions = response.data;
-      } catch (error) {
-        console.error('Error fetching questions:', error);
-      }
-    },
-    async addQuestion() {
-      try {
-        const questionPayload = {
-          assessmentId: this.newQuestion.assessmentId,
-          content: this.newQuestion.content,
-          type: this.newQuestion.type,
-          options: this.newQuestion.type === 'MultipleChoice' ? this.newQuestion.options : null,
-          correctAnswer: this.newQuestion.correctAnswer || null,
-        };
-        await assessmentQuestionService.createQuestion(questionPayload);
-        alert('Question added successfully!');
-        this.newQuestion.content = '';
-        this.newQuestion.type = 'MultipleChoice';
-        this.newQuestionOptionsInput = '';
-        this.newQuestion.options = '';
-        this.newQuestion.correctAnswer = '';
-        this.fetchQuestions();
-      } catch (error) {
-        console.error('Error adding question:', error);
-        alert('Failed to add question.');
-      }
-    },
-    editQuestion(id) {
-      alert(`Edit question with ID: ${id}`);
-    },
-    async deleteQuestion(id) {
-      if (confirm('Are you sure you want to delete this question?')) {
-        try {
-          await assessmentQuestionService.deleteQuestion(id);
-          alert('Question deleted successfully!');
-          this.fetchQuestions();
-        } catch (error) {
-          console.error('Error deleting question:', error);
-          alert('Failed to delete question.');
-        }
-      }
-    },
-  },
-};
+    await assessmentQuestionService.createQuestion(questionPayload);
+    toast.success('Question added successfully!');
+    newQuestion.value.content = '';
+    newQuestion.value.type = 'MultipleChoice';
+    newQuestionOptionsInput.value = '';
+    newQuestion.value.options = '';
+    newQuestion.value.correctAnswer = '';
+    fetchQuestions();
+  } catch (error) {
+    console.error('Error adding question:', error);
+    toast.error('Failed to add question.');
+  }
+}
+
+function editQuestion(id) {
+  toast.info(`Edit question with ID: ${id}`);
+}
+
+async function deleteQuestion(id) {
+  if (confirm('Are you sure you want to delete this question?')) {
+    try {
+      await assessmentQuestionService.deleteQuestion(id);
+      toast.success('Question deleted successfully!');
+      fetchQuestions();
+    } catch (error) {
+      console.error('Error deleting question:', error);
+      toast.error('Failed to delete question.');
+    }
+  }
+}
 </script>
 
 <style scoped>

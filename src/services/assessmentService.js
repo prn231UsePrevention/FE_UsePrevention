@@ -25,7 +25,7 @@ apiClient.interceptors.request.use(
 
 const assessmentService = {
   getAllAssessments() {
-    return apiClient.get();
+    return apiClient.get("");
   },
 
   getAssessmentById(id) {
