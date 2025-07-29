@@ -30,7 +30,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { getMyParticipations } from '@/services/participationService'
-import { getAllCommunityPrograms } from '@/services/communityProgramService'
+import { communityProgramService } from '@/services/communityProgramService'
 
 const participations = ref([])
 const programs = ref([])
@@ -51,10 +51,9 @@ const formatDate = (dateString) => {
 onMounted(async () => {
   loading.value = true
   try {
-    const token = localStorage.getItem('token')
     const [res, progRes] = await Promise.all([
-      getMyParticipations(token),
-      getAllCommunityPrograms(token)
+      getMyParticipations(),
+      communityProgramService.getAllCommunityPrograms()
     ])
     participations.value = Array.isArray(res.data) ? res.data : []
     programs.value = Array.isArray(progRes.data) ? progRes.data : []

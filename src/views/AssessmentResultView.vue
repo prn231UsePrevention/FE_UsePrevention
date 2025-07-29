@@ -84,7 +84,7 @@
 <script>
 import assessmentService from '@/services/assessmentService';
 import courseService from '@/services/courseService';
-import { getAllCommunityPrograms } from '@/services/communityProgramService'; // Import service
+import { communityProgramService } from '@/services/communityProgramService';
 
 export default {
   name: 'AssessmentResultView',
@@ -173,7 +173,7 @@ export default {
         // Fetch courses and programs in parallel
         const [coursesResponse, programsResponse] = await Promise.all([
           courseService.getAllCourses(),
-          getAllCommunityPrograms()
+          communityProgramService.getAllCommunityPrograms()
         ]);
         console.log('Type of coursesResponse before assignment:', typeof coursesResponse, 'Is Array:', Array.isArray(coursesResponse));
         this.allCourses = coursesResponse || [];

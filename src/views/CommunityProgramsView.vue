@@ -119,12 +119,7 @@
 <script setup>
 import { ref, computed, watchEffect } from 'vue';
 import { useAuthStore } from '@/stores/auth';
-import {
-  getAllCommunityPrograms,
-  createCommunityProgram,
-  updateCommunityProgram,
-  deleteCommunityProgram
-} from '../services/communityProgramService';
+import { communityProgramService } from '../services/communityProgramService';
 import {
   joinProgram,
   getParticipantsByProgram
@@ -151,8 +146,7 @@ const joinProgramId = ref(null);
 
 const fetchPrograms = async () => {
   try {
-    const token = localStorage.getItem('token');
-    const res = await getAllCommunityPrograms(token);
+    const res = await communityProgramService.getAllCommunityPrograms();
     programs.value = Array.isArray(res.data) ? res.data.filter(p => p && typeof p === 'object') : [];
     error.value = '';
   } catch (err) {
@@ -259,14 +253,13 @@ const toUTCISOString = (localStr) => {
 
 const addProgram = async () => {
   try {
-    const token = localStorage.getItem('token');
     const data = {
       ...form.value,
       startDate: toUTCISOString(form.value.startDate),
       endDate: toUTCISOString(form.value.endDate),
       imgUrl: form.value.imgUrl || null
     };
-    await createCommunityProgram(data, token);
+    await communityProgramService.createCommunityProgram(data);
     closeFormModal();
     fetchPrograms();
   } catch (err) {
@@ -276,7 +269,6 @@ const addProgram = async () => {
 
 const updateProgram = async () => {
   try {
-    const token = localStorage.getItem('token');
     const data = {
       name: form.value.name,
       description: form.value.description,
@@ -284,7 +276,7 @@ const updateProgram = async () => {
       endDate: toUTCISOString(form.value.endDate),
       imgUrl: form.value.imgUrl || null
     };
-    await updateCommunityProgram(form.value.id, data, token);
+    await communityProgramService.updateCommunityProgram(form.value.id, data);
     closeFormModal();
     fetchPrograms();
   } catch (err) {
@@ -295,8 +287,7 @@ const updateProgram = async () => {
 const removeProgram = async (id) => {
   if (!confirm('Bạn chắc chắn muốn xóa?')) return;
   try {
-    const token = localStorage.getItem('token');
-    await deleteCommunityProgram(id, token);
+    await communityProgramService.deleteCommunityProgram(id);
     // Reset state để tránh fetch lại dữ liệu đã xóa
     selectedEvent.value = null;
     participants.value = [];
@@ -348,8 +339,7 @@ function closeJoinModal() {
 async function submitJoinProgram() {
   loadingJoin.value = true;
   try {
-    const token = localStorage.getItem('token');
-    await joinProgram(joinProgramId.value, token, joinForm.value.preSurvey, joinForm.value.postSurvey);
+    await joinProgram(joinProgramId.value, joinForm.value.preSurvey, joinForm.value.postSurvey);
     await checkParticipation(joinProgramId.value);
     fetchPrograms();
     alert('Tham gia thành công!');
