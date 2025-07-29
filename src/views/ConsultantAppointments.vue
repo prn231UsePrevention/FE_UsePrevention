@@ -98,6 +98,7 @@
   <!-- Modal quản lý kết quả -->
   <div v-if="resultModal.visible" class="modal-overlay">
     <div class="modal-content card">
+      <button class="modal-close" @click="closeResultModal">×</button>
       <h3 v-if="resultModal.mode === 'create'">Ghi kết quả tư vấn</h3>
       <h3 v-else-if="resultModal.mode === 'edit'">Chỉnh sửa kết quả tư vấn</h3>
       <h3 v-else>Xem kết quả tư vấn</h3>
@@ -149,6 +150,7 @@ const resultModal = ref({
   userId: null,
   diagnosis: '',
   recommendation: '',
+  resultId: null, 
   mode: 'create' // 'create', 'edit', 'view'
 });
 
@@ -166,6 +168,7 @@ function openResultModal(app, mode = 'create') {
     recommendation: '',
     mode
   }
+  console.log('Opening result modal in mode:', mode, 'for appointment:', app.id, app.resultId)
   if (mode === 'view' && app.resultId) {
     fetchResultDetail(app.resultId)
   }
@@ -196,13 +199,14 @@ const allSlots = computed(() => {
     startTime: a.startTime,
     endTime: a.endTime,
     status: a.status,
-    hasResult: a.hasResult
+    hasResult: a.hasResult,
+    resultId: a.resultId || null,
   }))
+  console.log('All slots:', av, sch)
   return [...av, ...sch].sort((a, b) =>
     new Date(a.startTime) - new Date(b.startTime)
   )
 })
-
 // helpers format
 const formatDate = dt => new Date(dt).toLocaleDateString('vi-VN')
 const formatTime = dt =>
@@ -498,201 +502,233 @@ onMounted(() => {
 .consultant-appointments-wrapper {
   max-width: 900px;
   margin: 2rem auto;
-  padding: 1rem;
+  padding: 1.5rem 1rem 2.5rem 1rem;
   background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 2px 18px 0 rgba(31,41,55,.12);
 }
 
 h2 {
   text-align: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.8rem;
+  font-weight: 700;
+  font-size: 1.7rem;
+  color: #2252aa;
+  letter-spacing: .2px;
 }
 
 .slot-creator {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  gap: 0.7rem;
+  margin-bottom: 1.5rem;
 }
 
-.slot-creator input {
-  padding: 0.4rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.slot-creator input[type="datetime-local"] {
+  padding: 0.45rem 0.7rem;
+  border: 1.2px solid #b4cae7;
+  border-radius: 8px;
+  background: #f6f8fc;
+  font-size: 1rem;
+  margin-left: 0.5rem;
 }
 
 .slot-creator button {
-  padding: 0.4rem 0.8rem;
+  padding: 0.45rem 1.1rem;
   border: none;
-  background: #1976d2;
-  color: white;
-  border-radius: 4px;
+  background: linear-gradient(90deg, #2176ff 60%, #3f8efc 100%);
+  color: #fff;
+  border-radius: 8px;
+  font-weight: 500;
   cursor: pointer;
+  box-shadow: 0 2px 6px #d0e2ff33;
+  transition: background 0.17s, box-shadow 0.19s, transform 0.15s;
+  font-size: 1.04rem;
 }
-
 .slot-creator button:disabled {
-  opacity: 0.5;
+  opacity: 0.56;
   cursor: not-allowed;
+}
+.slot-creator button:not(:disabled):hover {
+  background: linear-gradient(90deg, #1b4cc8 60%, #2176ff 100%);
+  box-shadow: 0 4px 12px #1451b62e;
+  transform: translateY(-2px) scale(1.03);
 }
 
 .loading,
 .error,
 .no-data {
   text-align: center;
-  margin: 1rem 0;
+  margin: 1.1rem 0;
   color: #888;
+  font-size: 1.06rem;
 }
-
-.error {
-  color: #e53935;
-}
+.error { color: #e53935; }
 
 .appointments-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0 4px;
+  margin-top: 1.5rem;
 }
-
 .appointments-table th,
 .appointments-table td {
-  padding: 0.6rem;
-  border: 1px solid #ddd;
+  padding: 0.6rem 0.8rem;
+  background: #f9fbfe;
+  border: 1px solid #e6eefb;
+  border-radius: 7px;
   text-align: left;
+  font-size: 1.01rem;
+}
+.appointments-table th {
+  background: #e6eefb;
+  color: #2252aa;
+  font-weight: 700;
+}
+.appointments-table td.no-data {
+  text-align: center;
+  color: #aaa;
+  font-style: italic;
 }
 
 .actions button {
-  margin-right: 0.5rem;
-  padding: 0.4rem 0.8rem;
+  margin-right: 0.38rem;
+  padding: 0.36rem 1rem;
   border: none;
-  border-radius: 4px;
+  border-radius: 7px;
+  font-size: 0.97rem;
+  font-weight: 500;
   cursor: pointer;
+  transition: box-shadow 0.15s, background 0.18s;
+  box-shadow: 0 2px 7px #b2cdfd2b;
 }
-
 .actions button:hover {
-  opacity: 0.9;
+  opacity: 0.92;
+  box-shadow: 0 3px 12px #1976d246;
 }
-
-.actions button:nth-child(1) {
-  background: #4caf50;
-  color: white;
-}
-
-.actions button:nth-child(2) {
-  background: #1976d2;
-  color: white;
-}
-
-.actions button:nth-child(3) {
-  background: #e53935;
-  color: white;
-}
+.actions button:nth-child(1) { background: #3fa354; color: #fff; }
+.actions button:nth-child(2) { background: #2176ff; color: #fff; }
+.actions button:nth-child(3) { background: #e53935; color: #fff; }
+.actions button:last-child { background: #ffb703; color: #232; }
 
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.35);
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(31,41,55,0.18);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  transition: background 0.18s;
 }
 
 .modal-content {
   background: #fff;
-  padding: 2.2rem 2.5rem 2rem 2.5rem;
-  border-radius: 16px;
+  padding: 2.2rem 2.2rem 2rem 2.2rem;
+  border-radius: 22px;
   min-width: 350px;
   max-width: 95vw;
   max-height: 85vh;
   overflow-y: auto;
   position: relative;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 10px 32px rgba(45,62,80,0.17);
   font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+  animation: modalPop 0.21s cubic-bezier(0.38,1.55,0.47,0.92);
+}
+
+@keyframes modalPop {
+  from { transform: scale(0.95) translateY(16px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
 }
 
 .modal-content h3 {
   margin-top: 0;
   margin-bottom: 1.5rem;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1976d2;
+  font-size: 1.48rem;
+  font-weight: 650;
+  color: #2176ff;
   text-align: center;
+  letter-spacing: 0.2px;
 }
 
 .modal-content label {
   display: block;
-  margin-bottom: 1rem;
+  margin-bottom: 1.15rem;
   font-weight: 500;
-  color: #333;
+  color: #222;
 }
-
-.modal-content select,
+.modal-content input[type="text"],
 .modal-content input[type="datetime-local"],
-.modal-content input[type="text"] {
+.modal-content select,
+.modal-content textarea {
   width: 100%;
-  padding: 0.5rem 0.7rem;
-  border: 1px solid #d0d0d0;
-  border-radius: 6px;
-  font-size: 1rem;
-  margin-top: 0.3rem;
-  margin-bottom: 0.5rem;
+  padding: 0.52rem 0.8rem;
+  border: 1.3px solid #d5dbe6;
+  border-radius: 7px;
+  font-size: 1.04rem;
+  margin-top: 0.32rem;
+  margin-bottom: 0.3rem;
+  background: #f5f8fc;
   transition: border 0.2s;
+  resize: none;
 }
-
+.modal-content input:focus,
 .modal-content select:focus,
-.modal-content input[type="datetime-local"]:focus,
-.modal-content input[type="text"]:focus {
-  border: 1.5px solid #1976d2;
+.modal-content textarea:focus {
+  border: 1.5px solid #2176ff;
   outline: none;
+  background: #fff;
 }
 
 .modal-content button {
-  min-width: 100px;
-  padding: 0.5rem 1.2rem;
+  min-width: 12px;
+  padding: 0.5rem 0.9rem;
   border: none;
-  border-radius: 6px;
-  font-size: 1rem;
+  border-radius: 7px;
+  font-size: 1.06rem;
   font-weight: 500;
-  margin-top: 1rem;
-  background: #1976d2;
+  margin-top: 1.05rem;
+  background: #2176ff;
   color: #fff;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.18s;
 }
-
 .modal-content button:disabled {
   background: #b0b0b0;
   color: #fff;
   cursor: not-allowed;
 }
-
 .modal-content button+button {
   background: #e0e0e0;
-  color: #333;
+  color: #2b2b2b;
   margin-left: 1rem;
 }
-
 .modal-content button+button:hover {
   background: #d0d0d0;
 }
 
 .modal-close {
   position: absolute;
-  top: 12px;
-  right: 18px;
+  top: 13px;
+  right: 16px;
   background: none;
   border: none;
-  font-size: 2rem;
-  color: #888;
+  font-size: 2.2rem;
+  color: #adb8cb;
   cursor: pointer;
-  transition: color 0.2s;
+  transition: color 0.18s, transform 0.18s;
+  line-height: 1;
+  z-index: 10;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-
 .modal-close:hover {
-  color: #1976d2;
+  color: #fff
+  /* transform: scale(1.16); */
 }
 
 @media (max-width: 600px) {
@@ -700,9 +736,14 @@ h2 {
     padding: 1.2rem 0.7rem 1rem 0.7rem;
     min-width: 0;
   }
-
   .modal-content h3 {
-    font-size: 1.1rem;
+    font-size: 1.11rem;
+  }
+  .modal-close {
+    font-size: 2.6rem;
+    right: 6px;
+    top: 4px;
   }
 }
+
 </style>
