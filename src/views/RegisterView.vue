@@ -11,26 +11,12 @@
         <input v-model="email" type="email" id="email" required placeholder="Nhập email" />
       </div>
       <div class="form-group">
-        <label for="dateOfBirth">Ngày sinh</label>
-        <input v-model="dateOfBirth" type="date" id="dateOfBirth" required placeholder="Chọn ngày sinh" />
-      </div>
-      <div class="form-group">
-        <label for="gender">Giới tính</label>
-        <select v-model="gender" id="gender" required>
-          <option disabled value="">Chọn giới tính</option>
-          <option value="Male">Nam</option>
-          <option value="Female">Nữ</option>
-          <option value="Other">Khác</option>
-        </select>
-      </div>
-      <div class="form-group">
         <label for="password">Mật khẩu</label>
         <input v-model="password" type="password" id="password" required placeholder="Nhập mật khẩu" />
       </div>
       <div class="form-group">
         <label for="confirmPassword">Nhập lại mật khẩu</label>
-        <input v-model="confirmPassword" type="password" id="confirmPassword" required
-          placeholder="Nhập lại mật khẩu" />
+        <input v-model="confirmPassword" type="password" id="confirmPassword" required placeholder="Nhập lại mật khẩu" />
       </div>
       <div class="form-group">
         <label for="dateOfBirth">Ngày sinh</label>
@@ -46,12 +32,6 @@
         </select>
       </div>
       <button type="submit" :disabled="loading" class="btn primary">Đăng ký</button>
-      <div class="register-options">
-        <p class="register-divider">hoặc</p>
-        <router-link to="/register-consultant" class="btn btn-consultant">
-          Đăng ký Tư vấn viên
-        </router-link>
-      </div>
       <p class="switch-link">Đã có tài khoản? <router-link to="/login">Đăng nhập</router-link></p>
     </form>
   </div>
@@ -82,19 +62,21 @@ async function handleRegister() {
     loading.value = false
     return
   }
-  console.log(dateOfBirth.value);
   try {
     await axios.post(API_URL, {
+      fullName: fullName.value,
       email: email.value,
       password: password.value,
       dateOfBirth: dateOfBirth.value,
       gender: gender.value,
+      roleId: 0 // Mặc định roleId là 0
     })
     toast.success('Đăng ký thành công! Vui lòng đăng nhập.')
     setTimeout(() => {
       router.push('/login')
     }, 1200)
   } catch (err) {
+    toast.error(err.response?.data?.message || 'Đăng ký thất bại!')
   } finally {
     loading.value = false
   }
@@ -109,7 +91,6 @@ async function handleRegister() {
   justify-content: center;
   padding: var(--spacing-lg);
 }
-
 .auth-form {
   padding: var(--spacing-xl);
   border-radius: var(--border-radius-lg);
@@ -121,25 +102,23 @@ async function handleRegister() {
   flex-direction: column;
   gap: var(--spacing-md);
 }
-
 .auth-form h2 {
   text-align: center;
   color: var(--primary-color);
   margin-bottom: var(--spacing-lg);
   font-size: var(--font-size-h3);
 }
-
 .form-group {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
 }
-
 label {
   font-size: var(--font-size-md);
   color: var(--text-color-primary);
   font-weight: 500;
 }
+input, select {
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--border-radius-sm);
   border: 1px solid #b0c6e8;
@@ -147,17 +126,16 @@ label {
   outline: none;
   transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
+input:focus, select:focus {
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(var(--primary-color), 0.2);
 }
-
 button {
   margin-top: var(--spacing-md);
   padding: var(--spacing-md) 0;
   font-size: var(--font-size-lg);
   font-weight: 600;
 }
-
 button:disabled {
   background: var(--background-color);
   color: var(--text-color-secondary);
@@ -170,8 +148,8 @@ button:disabled {
   font-size: var(--font-size-md);
   margin-top: var(--spacing-md);
 }
-
 .switch-link a {
   color: var(--primary-color);
   font-weight: 500;
 }
+</style>
