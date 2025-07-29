@@ -1,25 +1,41 @@
 import axios from 'axios';
 
-const API_URL = '/api/CommunityPrograms';
+const apiClient = axios.create({
+    baseURL: 'https://localhost:7233/api',
+    timeout: 10000,
+    headers: {
+        'Content-Type': 'application/json'
+    }
+});
 
-export const getAllCommunityPrograms = (token) =>
-    axios.get(API_URL, {
-        headers: { Authorization: `Bearer ${token}` }
-    });
+// Interceptor tự động thêm token vào header
+apiClient.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
 
-export const getCommunityProgramById = (id) => axios.get(`${API_URL}/${id}`);
+export const communityProgramService = {
+    getAllCommunityPrograms() {
+        return apiClient.get('/CommunityPrograms');
+    },
+    getCommunityProgramById(id) {
+        return apiClient.get(`/CommunityPrograms/${id}`);
+    },
+    createCommunityProgram(data) {
+        return apiClient.post('/CommunityPrograms', data);
+    },
+    updateCommunityProgram(id, data) {
+        return apiClient.put(`/CommunityPrograms/${id}`, data);
+    },
+    deleteCommunityProgram(id) {
+        return apiClient.delete(`/CommunityPrograms/${id}`);
+    }
+};
 
-export const createCommunityProgram = (data, token) =>
-    axios.post(API_URL, data, {
-        headers: { Authorization: `Bearer ${token}` }
-    });
-
-export const updateCommunityProgram = (id, data, token) =>
-    axios.put(`${API_URL}/${id}`, data, {
-        headers: { Authorization: `Bearer ${token}` }
-    });
-
-export const deleteCommunityProgram = (id, token) =>
-    axios.delete(`${API_URL}/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-    }); 
+export default communityProgramService; 

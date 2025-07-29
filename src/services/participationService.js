@@ -1,18 +1,32 @@
 import axios from 'axios';
 
-const API_URL = '/api/Participation';
+const apiClient = axios.create({
+    baseURL: 'https://localhost:7233/api',
+    timeout: 10000,
+    headers: {
+        'Content-Type': 'application/json'
+    }
+});
+
+// Interceptor tự động thêm token vào header
+apiClient.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
 
 // User tham gia chương trình
-export const joinProgram = (programId, token, preSurvey = '', postSurvey = '') =>
-    axios.post(API_URL, { programId, preSurvey, postSurvey }, {
-        headers: { Authorization: `Bearer ${token}` }
-    });
+export const joinProgram = (programId, preSurvey = '', postSurvey = '') =>
+    apiClient.post('/Participation', { programId, preSurvey, postSurvey });
 
 // Lấy danh sách chương trình user đã tham gia
-export const getMyParticipations = (token) =>
-    axios.get(`${API_URL}/my`, {
-        headers: { Authorization: `Bearer ${token}` }
-    });
+export const getMyParticipations = () =>
+    apiClient.get('/Participation/my');
 
 // Admin: Lấy danh sách người tham gia của 1 chương trình
 export async function getParticipantsByProgram(programId, token) {
